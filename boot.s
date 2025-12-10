@@ -1,4 +1,4 @@
-# boot.s (セミコロン完全排除版)
+# boot.s
 
 .code16                # CPUを16ビットリアルモードに設定する
 # .global start          # リンカ/ローダのために 'start' シンボルを公開
