@@ -56,8 +56,14 @@
   - Added shared C dispatcher entry (`arch/x86/isr_dispatch.c`) and frame definition (`arch/x86/isr_dispatch.h`).
   - `idt_init()` now installs default gates from the stub table before `lidt`.
   - Verification: `make kernel.elf && make check-kernel`, `make moon-kernel.elf && make check-moon-kernel`, serial boot smoke tests for both paths.
-- [ ] Step 4: Add PIC remap + IRQ mask/EOI control (master/slave PIC at remapped vectors).
+- [x] Step 4: Add PIC remap + IRQ mask/EOI control (master/slave PIC at remapped vectors).
+  - Added `arch/x86/pic.c` + `arch/x86/pic.h` (`pic_remap`, `pic_set_mask`, `pic_clear_mask`, `pic_send_eoi`).
+  - Wired PIC remap (`0x20`, `0x28`) into both `kernel/main.c` and `kernel/moon_entry.c`.
+  - Shared dispatcher now issues PIC EOI for IRQ vectors `32-47`.
+  - Verification: kernel/moon-kernel build+multiboot checks and serial boot smoke tests.
 - [ ] Step 5: Implement common interrupt dispatcher + exception panic path (vector/error/EIP over serial).
+- [ ] Step 5.h: Add IRQ dispatch table/callback routing in `isr_common_handler` for PIT/keyboard integration.
+- [ ] Step 5.h: Add spurious IRQ7/IRQ15 filtering (PIC ISR check) before EOI for robustness.
 - [ ] Step 6: Wire PIT timer IRQ (IRQ0) with tick counter + rate-limited serial heartbeat.
 - [ ] Step 7: Wire PS/2 keyboard IRQ (IRQ1) with scancode capture + serial logging.
 - [ ] Step 8: Expose minimal MoonBit-facing interrupt API (ticks + keyboard event polling/queue).
