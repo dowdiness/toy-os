@@ -16,7 +16,8 @@ MoonBit's native backend can be used for bare-metal x86 development because it e
 - Implemented: initial MoonBit kernel path (`moon-kernel.elf`) booting and emitting serial logs.
 - Implemented: allocator hardening in `runtime/runtime_stubs.c`
   (`malloc` overflow guard, `calloc` multiplication overflow guard, `realloc` content preservation).
-- Remaining immediate issue: MoonBit FFI `Bytes` ownership annotation warnings.
+- Implemented: MoonBit FFI `Bytes` ownership warnings resolved in `moon_kernel.mbt`
+  with `#borrow` annotations on C extern bindings.
 
 ## Key Findings
 

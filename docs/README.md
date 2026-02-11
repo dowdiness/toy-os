@@ -6,8 +6,7 @@ Use this read order to minimize context size while keeping references clear.
 ## Current Status
 
 - Phase 0 (C kernel path): available and validated with Multiboot checks.
-- Phase 1 (MoonBit kernel path): initial boot path available with serial output.
-- Remaining Phase 1 item: resolve MoonBit FFI ownership annotation warnings for `Bytes` parameters.
+- Phase 1 (MoonBit kernel path): baseline complete with serial output and validated build path.
 
 ## Recommended Read Order (Token-Efficient)
 

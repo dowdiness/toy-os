@@ -89,7 +89,7 @@ $(OBJ): $(SRC)
 # -----------------------------------------------------------------
 run: $(FINAL_IMG)
 	# QEMUでフロッピーとして起動
-	$(QEMU) -drive format=raw,file=$(FINAL_IMG) -boot a
+	$(QEMU) -drive format=raw,file=$(FINAL_IMG),if=floppy -boot a
 
 # -----------------------------------------------------------------
 # Phase 0 C kernel path targets

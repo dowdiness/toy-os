@@ -63,6 +63,7 @@ void *malloc(size_t size) {
     return ptr;
 }
 
+/* TODO: no-op for Phase 1 bump allocator; replace with free-list/bitmap allocator when needed. */
 void free(void *ptr) {
     (void)ptr;
 }

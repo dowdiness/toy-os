@@ -35,6 +35,11 @@ make check-moon-kernel                  # Multiboot ヘッダ検証
 make run-moon-kernel-serial             # ヘッドレス実行 + シリアル出力
 ```
 
+## ドライバ・カーネルメモ
+
+- VGA ドライバ (`drivers/vga.c`) は RAM 上のシャドウバッファを使用。1文字書込みのみ VRAM に直接反映し、スクロール・クリアは一括フラッシュ。
+- 共有 hex フォーマッタ (`kernel/fmt.c`) が `put_hex32()` を関数ポインタ経由で提供し、VGA / シリアル双方で利用。
+
 ## ランタイムメモ
 
 - `runtime/runtime_stubs.c` で `malloc` / `calloc` のオーバーフロー安全チェックを実装。

@@ -1,0 +1,8 @@
+import {
+  "dowdiness/toy_os" @toy_os,
+}
+
+options(
+  "is-main": true,
+  "supported-targets": [ "native" ],
+)

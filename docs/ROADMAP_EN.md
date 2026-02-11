@@ -19,7 +19,11 @@ Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
 - Completed: initial Phase 1 MoonBit path (`moon-kernel.elf`) booting and printing via serial.
 - Completed: runtime allocator hardening in `runtime/runtime_stubs.c`
   (`malloc` overflow guard, `calloc` overflow guard, `realloc` data preservation).
-- Remaining immediate item: resolve MoonBit FFI `Bytes` ownership annotation warnings.
+- Completed: MoonBit FFI `Bytes` ownership warnings resolved in `moon_kernel.mbt`
+  using `#borrow` annotations for C extern calls.
+- Completed: VGA shadow buffer to reduce MMIO traffic during scroll.
+- Completed: shared `put_hex32()` formatter extracted to `kernel/fmt.c` (DRY).
+- Completed: QEMU boot-sector invocation fix (eliminated spurious error messages).
 
 ## Architecture Snapshot
 

@@ -35,6 +35,11 @@ make check-moon-kernel               # Validate Multiboot header
 make run-moon-kernel-serial          # Headless run + serial output
 ```
 
+## Driver & Kernel Notes
+
+- VGA driver (`drivers/vga.c`) uses a RAM shadow buffer; only single-character writes hit VRAM directly, while bulk operations (scroll, clear) flush once.
+- Shared hex formatter (`kernel/fmt.c`) provides `put_hex32()` via function pointers, used by both VGA and serial output paths.
+
 ## Runtime Notes
 
 - `runtime/runtime_stubs.c` includes overflow-safe allocation guards for `malloc` and `calloc`.

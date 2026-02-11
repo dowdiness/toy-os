@@ -19,7 +19,11 @@
 - 完了: Phase 1 の初期MoonBit経路（`moon-kernel.elf`）の起動とシリアル出力。
 - 完了: `runtime/runtime_stubs.c` のアロケータ堅牢化
   （`malloc` オーバーフロー対策、`calloc` 乗算オーバーフロー対策、`realloc` のデータ保持）。
-- 直近の未完了: MoonBit FFI の `Bytes` 所有権アノテーション警告の解消。
+- 完了: MoonBit FFI の `Bytes` 所有権アノテーション警告を
+  `moon_kernel.mbt` の `#borrow` で解消。
+- 完了: VGA ドライバにシャドウバッファを導入し、スクロール時の MMIO 負荷を軽減。
+- 完了: `put_hex32()` 共有フォーマッタを `kernel/fmt.c` に分離（DRY 改善）。
+- 完了: QEMU ブートセクタ起動の不要な警告・エラーメッセージを解消。
 
 ---
 
