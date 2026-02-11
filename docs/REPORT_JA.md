@@ -8,6 +8,14 @@
 - 16-bit から 32-bit への移行実装は [tutorial-01-protected-mode.md](./tutorial-01-protected-mode.md) を参照してください。
 - 文書全体の読み順は [README.md](./README.md) を参照してください。
 
+## 状況アップデート（2026-02-11）
+
+- 実装済み: Multiboot C カーネル経路（`kernel.elf`）とシリアル診断出力。
+- 実装済み: 初期 MoonBit カーネル経路（`moon-kernel.elf`）の起動とシリアルログ出力。
+- 実装済み: `runtime/runtime_stubs.c` のアロケータ堅牢化
+  （`malloc` オーバーフロー対策、`calloc` 乗算オーバーフロー対策、`realloc` のデータ保持）。
+- 直近の未解決: MoonBit FFI `Bytes` 所有権アノテーション警告の解消。
+
 **MoonBitはベアメタルx86開発に適したフリースタンディングCコードにコンパイル可能だが、カスタムメモリアロケータとランタイムスタブの提供が必要。** 最も重要な発見は、MoonBitのCバックエンドが**Perceus参照カウント**を使用していること——トレーシングGCではない——つまり動作に必要なのは`malloc`/`free`のみで、当初の予想よりはるかにOS開発に適している。GRUBのMultibootによるブート、QEMUでのテスト、WSL2上のi686-elfクロスコンパイラを組み合わせれば、MoonBitソースからベアメタルx86実行までの完全なカーネルパイプラインを構築できる。本レポートでは、現在の"Hello World"ブートローダーから、MoonBitユーザーランドアプリケーションが動作する最小限のOSまでの完全なロードマップを提供する。
 
 ---

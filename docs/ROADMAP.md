@@ -11,6 +11,16 @@
 - ブートシーケンスの実装手順は [tutorial-01-protected-mode.md](./tutorial-01-protected-mode.md) を参照してください。
 - 文書全体の読み順は [README.md](./README.md) を参照してください。
 
+## 実装状況（2026-02-11）
+
+- 完了: ブートセクタ経路（16-bit -> 32-bit protected mode 遷移）。
+- 完了: Phase 0 Cカーネル経路（`kernel.elf`）と Multiboot 検証。
+- 完了: 初期シリアルデバッグ経路（`run-kernel-serial`）。
+- 完了: Phase 1 の初期MoonBit経路（`moon-kernel.elf`）の起動とシリアル出力。
+- 完了: `runtime/runtime_stubs.c` のアロケータ堅牢化
+  （`malloc` オーバーフロー対策、`calloc` 乗算オーバーフロー対策、`realloc` のデータ保持）。
+- 直近の未完了: MoonBit FFI の `Bytes` 所有権アノテーション警告の解消。
+
 ---
 
 ## アーキテクチャ概要

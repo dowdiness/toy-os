@@ -11,6 +11,16 @@ This file is a compact English companion to the canonical roadmap:
 Use this file for quick planning context with minimal tokens.
 Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
 
+## Implementation Status (February 11, 2026)
+
+- Completed: boot-sector path with 16-bit -> 32-bit transition.
+- Completed: Phase 0 C kernel path (`kernel.elf`) with Multiboot validation.
+- Completed: early serial debugging path (`run-kernel-serial`).
+- Completed: initial Phase 1 MoonBit path (`moon-kernel.elf`) booting and printing via serial.
+- Completed: runtime allocator hardening in `runtime/runtime_stubs.c`
+  (`malloc` overflow guard, `calloc` overflow guard, `realloc` data preservation).
+- Remaining immediate item: resolve MoonBit FFI `Bytes` ownership annotation warnings.
+
 ## Architecture Snapshot
 
 1. Write kernel logic in MoonBit.

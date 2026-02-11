@@ -1,0 +1,10 @@
+{
+  "is-main": true,
+  "supported-targets": ["native"],
+  "import": [
+    {
+      "path": "dowdiness/toy_os",
+      "alias": "toy_os"
+    }
+  ]
+}

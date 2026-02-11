@@ -6,6 +6,7 @@
 現在の状態:
 - ブートセクタ経路: `boot.s` で 16-bit 起動から 32-bit protected mode へ遷移。
 - Phase 0 カーネル経路: Multiboot + フリースタンディング C カーネルのビルドが可能。
+- Phase 1 カーネル経路: MoonBit 生成コードのカーネル経路が起動し、COM1 シリアルにログ出力可能。
 
 ## クイックスタート
 
@@ -24,6 +25,21 @@ make run-kernel                         # QEMU で kernel.elf を起動
 make run-kernel-serial                  # ヘッドレス実行 + COM1 シリアルを端末へ出力
 make KERNEL_CROSS=i686-elf- kernel.elf # 任意: クロスツールチェーンを使用
 ```
+
+## Phase 1 MoonBit カーネル経路
+
+```sh
+make moon-gen                           # cmd/moon_kernel から MoonBit の native C を生成
+make moon-kernel.elf                    # フリースタンディング MoonBit カーネル ELF をビルド
+make check-moon-kernel                  # Multiboot ヘッダ検証
+make run-moon-kernel-serial             # ヘッドレス実行 + シリアル出力
+```
+
+## ランタイムメモ
+
+- `runtime/runtime_stubs.c` で `malloc` / `calloc` のオーバーフロー安全チェックを実装。
+- `realloc` は既存データを保持する動作に修正済み。
+- `free` は現状 no-op（バンプアロケータ前提）で、初期段階のマイルストーン向け実装。
 
 ## ドキュメント
 

@@ -1,0 +1,4 @@
+{
+  "supported-targets": ["native"],
+  "native-stub": ["runtime/moon_kernel_ffi_host.c"]
+}

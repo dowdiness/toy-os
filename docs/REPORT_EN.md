@@ -10,6 +10,14 @@ This file is a compact English companion to the canonical deep report:
 
 MoonBit's native backend can be used for bare-metal x86 development because it emits C and relies on reference counting (Perceus style), not a tracing garbage collector. In practice, this means the runtime surface is manageable for OS work, but you must supply freestanding runtime dependencies yourself.
 
+## Status Delta (February 11, 2026)
+
+- Implemented: Multiboot C kernel path (`kernel.elf`) with serial diagnostics.
+- Implemented: initial MoonBit kernel path (`moon-kernel.elf`) booting and emitting serial logs.
+- Implemented: allocator hardening in `runtime/runtime_stubs.c`
+  (`malloc` overflow guard, `calloc` multiplication overflow guard, `realloc` content preservation).
+- Remaining immediate issue: MoonBit FFI `Bytes` ownership annotation warnings.
+
 ## Key Findings
 
 1. MoonBit -> C generation fits a two-stage kernel build pipeline.

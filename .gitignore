@@ -4,6 +4,7 @@
 
 # ------ MoonBit build output ------
 target/
+_build/
 .mooncakes/
 
 # ------ Cross-compilation artifacts ------
