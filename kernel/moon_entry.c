@@ -45,6 +45,10 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     serial_puts("[moon-kernel] PIC remapped (0x20-0x2F)\n");
     serial_puts("[moon-kernel] PIT IRQ0 enabled (100Hz)\n");
     serial_puts("[moon-kernel] Keyboard IRQ1 enabled\n");
+    /* MoonBit runs with IRQs enabled so tick/keyboard polling works live. */
+    /* Future critical sections should explicitly control IRQ state. */
+    enable_interrupts();
+    serial_puts("[moon-kernel] interrupts enabled\n");
     serial_puts("[moon-kernel] entering generated MoonBit main\n");
     vga_puts("[moon-kernel] booting MoonBit path\n");
 
@@ -53,6 +57,5 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     serial_puts("[moon-kernel] MoonBit main returned\n");
     vga_puts("[moon-kernel] MoonBit main returned\n");
 
-    enable_interrupts();
     cpu_idle_forever();
 }

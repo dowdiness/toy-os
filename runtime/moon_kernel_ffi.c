@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#include "arch/x86/keyboard.h"
+#include "arch/x86/pit.h"
 #include "drivers/serial.h"
 #include "drivers/vga.h"
 #include "moonbit.h"
@@ -38,4 +40,12 @@ void moon_kernel_serial_puts(moonbit_bytes_t s) {
 
 void moon_kernel_vga_puts(moonbit_bytes_t s) {
     write_bytes_to_vga(s);
+}
+
+int32_t moon_kernel_get_ticks(void) {
+    return (int32_t)pit_get_ticks();
+}
+
+int32_t moon_kernel_keyboard_pop_event(void) {
+    return (int32_t)keyboard_pop_event();
 }

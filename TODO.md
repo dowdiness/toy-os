@@ -80,6 +80,15 @@
   - IRQ1 handler reads status/data ports (`0x64`/`0x60`) and logs set-1 scancodes (supports `0xE0` prefix).
   - Verification: kernel/moon-kernel build+multiboot checks and serial boot smoke tests.
   - Pending interactive check: verify live keypress scancode logs in a non-headless QEMU run.
-- [ ] Step 8: Expose minimal MoonBit-facing interrupt API (ticks + keyboard event polling/queue).
+- [x] Step 8: Expose minimal MoonBit-facing interrupt API (ticks + keyboard event polling/queue).
+  - Added C-facing API exports in `runtime/moon_kernel_ffi.c`:
+    - `moon_kernel_get_ticks()` (from PIT tick counter)
+    - `moon_kernel_keyboard_pop_event()` (keyboard queue pop)
+  - Added keyboard IRQ queue in `arch/x86/keyboard.c` and non-blocking `keyboard_pop_event()` API.
+  - Queue dequeue return type polished to explicit `int32_t` for fixed-width ABI clarity.
+  - Added MoonBit extern bindings in `moon_kernel.mbt` and integrated tick/event polling in `moon_kernel_entry()`.
+  - Enabled interrupts before MoonBit `main` execution in `kernel/moon_entry.c` so MoonBit polling sees live IRQ state.
+  - Documented that MoonBit `main` is interrupt-preemptible in current design; future critical sections should manage IRQ state explicitly.
+  - Verification: `moon check --target native`, kernel/moon-kernel build+multiboot checks, serial boot smoke tests.
 - [ ] Step 9: Run Phase 2 verification matrix (fault path + timer + keyboard + regression boot checks).
 - [ ] Step 10: Update docs (`README.md`, `README_JA.md`, `docs/README.md`, roadmap/report status) for Phase 2 progress.
