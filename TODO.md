@@ -90,5 +90,22 @@
   - Enabled interrupts before MoonBit `main` execution in `kernel/moon_entry.c` so MoonBit polling sees live IRQ state.
   - Documented that MoonBit `main` is interrupt-preemptible in current design; future critical sections should manage IRQ state explicitly.
   - Verification: `moon check --target native`, kernel/moon-kernel build+multiboot checks, serial boot smoke tests.
-- [ ] Step 9: Run Phase 2 verification matrix (fault path + timer + keyboard + regression boot checks).
+- [x] Step 9: Run Phase 2 verification matrix (fault path + timer + keyboard + regression boot checks).
+  - Build/regression checks:
+    - `moon check --target native`: OK.
+    - `make kernel.elf && make check-kernel`: OK (`Multiboot header: OK`).
+    - `make moon-kernel.elf && make check-moon-kernel`: OK (`MoonBit kernel multiboot header: OK`).
+    - `make boot_512.img`: OK (legacy boot-sector image still builds).
+  - Runtime serial checks:
+    - `timeout 6s make run-kernel-serial`: boot diagnostics + repeated `[pit] heartbeat`.
+    - `timeout 6s make run-moon-kernel-serial`: MoonBit entry logs + repeated `[pit] heartbeat`.
+  - Keyboard IRQ checks:
+    - Injected synthetic keys via QEMU monitor (`sendkey a`, `sendkey ret`) while logging serial to file.
+    - Observed `[kbd] scancode=... press/release` logs on the MoonBit kernel path.
+  - Fault-path checks:
+    - Added compile-time self-test hook in `kernel/main.c` guarded by `PHASE2_FAULT_TEST_INT3`.
+    - Built with fault define and ran QEMU; observed deterministic panic dump:
+      - `[isr] PANIC exception vector=0x00000003 ...`
+      - register dump line + halt loop behavior.
+    - Rebuilt without the define and re-ran regression/runtime checks to confirm normal behavior.
 - [ ] Step 10: Update docs (`README.md`, `README_JA.md`, `docs/README.md`, roadmap/report status) for Phase 2 progress.

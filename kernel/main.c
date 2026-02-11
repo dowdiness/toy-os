@@ -19,6 +19,13 @@ static void cpu_idle_forever(void) {
     }
 }
 
+static void maybe_trigger_fault_selftest(void) {
+#if defined(PHASE2_FAULT_TEST_INT3)
+    serial_puts("[selftest] triggering INT3 exception\n");
+    __asm__ volatile("int3");
+#endif
+}
+
 static void irq_baseline_masking(void) {
     uint8_t irq;
 
@@ -68,6 +75,7 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     vga_puts("Kernel C path is running.\n");
     serial_puts("Kernel C path is running.\n");
 
+    maybe_trigger_fault_selftest();
     enable_interrupts();
     cpu_idle_forever();
 }
