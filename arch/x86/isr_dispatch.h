@@ -26,6 +26,10 @@ struct isr_frame {
     uint32_t eflags;
 };
 
+typedef void (*irq_handler_t)(uint8_t irq_line, const struct isr_frame *frame);
+
 void isr_common_handler(struct isr_frame *frame);
+void isr_register_irq_handler(uint8_t irq_line, irq_handler_t handler);
+void isr_unregister_irq_handler(uint8_t irq_line);
 
 #endif

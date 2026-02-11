@@ -10,6 +10,7 @@
 #define ICW1_ICW4    0x01u
 #define ICW1_INIT    0x10u
 #define ICW4_8086    0x01u
+#define PIC_READ_ISR 0x0Bu
 
 static inline void outb(uint16_t port, uint8_t value) {
     __asm__ volatile("outb %0, %1" : : "a"(value), "Nd"(port));
@@ -97,4 +98,15 @@ void pic_send_eoi(uint8_t irq_line) {
         outb(PIC2_COMMAND, 0x20u);
     }
     outb(PIC1_COMMAND, 0x20u);
+}
+
+uint16_t pic_get_isr(void) {
+    uint8_t master_isr;
+    uint8_t slave_isr;
+
+    outb(PIC1_COMMAND, PIC_READ_ISR);
+    master_isr = inb(PIC1_COMMAND);
+    outb(PIC2_COMMAND, PIC_READ_ISR);
+    slave_isr = inb(PIC2_COMMAND);
+    return (uint16_t)((uint16_t)master_isr | (uint16_t)((uint16_t)slave_isr << 8));
 }

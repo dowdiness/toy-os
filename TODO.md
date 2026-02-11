@@ -61,9 +61,14 @@
   - Wired PIC remap (`0x20`, `0x28`) into both `kernel/main.c` and `kernel/moon_entry.c`.
   - Shared dispatcher now issues PIC EOI for IRQ vectors `32-47`.
   - Verification: kernel/moon-kernel build+multiboot checks and serial boot smoke tests.
-- [ ] Step 5: Implement common interrupt dispatcher + exception panic path (vector/error/EIP over serial).
-- [ ] Step 5.h: Add IRQ dispatch table/callback routing in `isr_common_handler` for PIT/keyboard integration.
-- [ ] Step 5.h: Add spurious IRQ7/IRQ15 filtering (PIC ISR check) before EOI for robustness.
+- [x] Step 5: Implement common interrupt dispatcher + exception panic path (vector/error/EIP over serial).
+  - `arch/x86/isr_dispatch.c` now panics+halts on exceptions with vector/error/EIP/CS/EFLAGS and register dump.
+  - Added IRQ dispatch routing via callback table (`isr_register_irq_handler` / `isr_unregister_irq_handler`).
+  - Added fallback log for unexpected vectors outside exception/IRQ ranges.
+- [x] Step 5.h: Add IRQ dispatch table/callback routing in `isr_common_handler` for PIT/keyboard integration.
+- [x] Step 5.h: Add spurious IRQ7/IRQ15 filtering (PIC ISR check) before EOI for robustness.
+  - Added `pic_get_isr()` in `arch/x86/pic.c` and spurious handling in dispatcher (IRQ15 sends master cascade EOI only).
+  - Verification: kernel/moon-kernel build+multiboot checks and serial boot smoke tests.
 - [ ] Step 6: Wire PIT timer IRQ (IRQ0) with tick counter + rate-limited serial heartbeat.
 - [ ] Step 7: Wire PS/2 keyboard IRQ (IRQ1) with scancode capture + serial logging.
 - [ ] Step 8: Expose minimal MoonBit-facing interrupt API (ticks + keyboard event polling/queue).
