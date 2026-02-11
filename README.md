@@ -1,13 +1,23 @@
 # Toy OS
 
-Hallo World
-アセンブリによるベアメタル環境でのHallo World
+[EN](README.md) | [日本語](README_JA.md)
+
+Minimal bare-metal x86 bootloader project.
+Current state: boot sector prints `Hello, World!` from 16-bit real mode.
+
+## Quickstart
 
 ```sh
-make # boot.s をアセンブルし、boot_512.img を作成後、QEMUで起動します。
-make run #既に boot_512.img が存在する場合、QEMUを起動します。
-make clean #boot.o, boot.elf, boot.img, boot_512.img の全生成ファイルを削除します。
+make        # Build boot_512.img and run in QEMU
+make run    # Run existing boot_512.img in QEMU
+make clean  # Remove generated files (*.o, *.elf, *.img)
 ```
 
-参考チャット
-https://gemini.google.com/share/2fd5c5c1853c
+## Documentation
+
+- [Documentation index](docs/README.md): recommended read order.
+- [Protected mode tutorial](docs/tutorial-01-protected-mode.md): step-by-step 16-bit -> 32-bit transition.
+- [Canonical roadmap (JA)](docs/ROADMAP.md): detailed implementation roadmap.
+- [Roadmap companion (EN)](docs/ROADMAP_EN.md): token-efficient roadmap summary.
+- [Canonical report (JA)](docs/REPORT_JA.md): deep technical report.
+- [Report companion (EN)](docs/REPORT_EN.md): token-efficient report summary.

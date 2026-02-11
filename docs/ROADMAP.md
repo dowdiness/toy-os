@@ -3,6 +3,14 @@
 > MoonBitのCバックエンドを使用してベアメタルx86カーネルを構築するための実装計画
 > ターゲット: QEMU (qemu-system-i386) → 将来的に実機 (中古Thin Client等)
 
+## この文書の位置づけ
+
+- 本ファイルは「詳細版ロードマップ（正本）」です。
+- 英語の要約版は [ROADMAP_EN.md](./ROADMAP_EN.md) を参照してください。
+- 背景調査・技術的な根拠は [REPORT_JA.md](./REPORT_JA.md)（要約: [REPORT_EN.md](./REPORT_EN.md)）を参照してください。
+- ブートシーケンスの実装手順は [tutorial-01-protected-mode.md](./tutorial-01-protected-mode.md) を参照してください。
+- 文書全体の読み順は [README.md](./README.md) を参照してください。
+
 ---
 
 ## アーキテクチャ概要
