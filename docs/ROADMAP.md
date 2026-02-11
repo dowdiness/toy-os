@@ -55,28 +55,37 @@ Bare metal execution
 ```
 moonbit-os/
 ├── moon.mod.json
+├── moon.pkg                     # ルートMoonBitパッケージ設定（native-stub等）
 ├── Makefile                    # 2段階ビルド: moon build → cross-compile
 ├── linker.ld                   # カーネルリンカスクリプト
+├── boot.s                      # 512-byte ブートセクタ経路
+├── moon_kernel.mbt             # ルートMoonBitエントリ（FFI宣言含む）
 ├── arch/x86/
-│   ├── boot.s                  # Multibootエントリポイント
+│   ├── multiboot_boot.s        # Multibootエントリポイント
 │   ├── isr_stubs.asm           # 割り込みハンドララッパー (NASM)
 │   └── gdt.c                   # GDT/TSS セットアップ
+├── cmd/moon_kernel/
+│   ├── main.mbt                # MoonBit main package entry
+│   └── moon.pkg                # is-main package 設定
 ├── runtime/
 │   ├── runtime_stubs.c         # malloc, free, memcpy, memset, abort
-│   ├── moonbit.h               # freestanding用に修正したMoonBitヘッダ
-│   └── runtime.c               # MoonBitランタイム ($MOON_HOME/lib/ からコピー)
+│   ├── moon_kernel_ffi.c       # MoonBit <-> C 文字列ブリッジ
+│   └── moon_kernel_ffi_host.c  # MoonBit native codegen 用FFIスタブ
 ├── drivers/
 │   ├── vga.c                   # VGAテキストモードドライバ
 │   ├── serial.c                # COM1シリアル出力
 │   └── keyboard.c              # PS/2キーボードドライバ
 └── kernel/
-    ├── main.mbt                # カーネルエントリポイント
-    ├── moon.pkg.json           # native-stub, cc-flags設定
-    ├── console.mbt             # 高レベル出力抽象化
+    ├── main.c                  # Cカーネルエントリ (Phase 0)
+    ├── moon_entry.c            # MoonBit呼び出しエントリ (Phase 1)
+    ├── fmt.c                   # 最小フォーマット補助
     ├── alloc.mbt               # メモリアロケータ (Phase 3)
     ├── interrupts.mbt          # 割り込みディスパッチロジック (Phase 2)
     └── proc.mbt                # プロセス管理 (Phase 4)
 ```
+
+注: `moonbit.h` と `runtime.c` は通常リポジトリ内にコピーせず、
+`~/.moon/include` と `$MOON_HOME/lib` を `Makefile` から直接参照する。
 
 ---
 
@@ -117,10 +126,10 @@ make install-gcc install-target-libgcc
 
 **検証**: `i686-elf-gcc --version` が動作すること
 
-### タスク 0.2: Multibootブートスタブ (boot.s)
+### タスク 0.2: Multibootブートスタブ (`multiboot_boot.s`)
 
 ```gas
-# arch/x86/boot.s
+# arch/x86/multiboot_boot.s
 .set MAGIC,    0x1BADB002
 .set FLAGS,    (1<<0 | 1<<1)          # ページ境界アライン + メモリマップ要求
 .set CHECKSUM, -(MAGIC + FLAGS)
@@ -223,10 +232,10 @@ LDFLAGS  = -T linker.ld -nostdlib
 
 all: kernel.elf
 
-kernel.elf: boot.o vga.o
+kernel.elf: multiboot_boot.o vga.o
 	$(CC) $(LDFLAGS) $^ -o $@ -lgcc
 
-boot.o: arch/x86/boot.s
+multiboot_boot.o: arch/x86/multiboot_boot.s
 	$(AS) --32 $< -o $@
 
 vga.o: drivers/vga.c
@@ -375,27 +384,16 @@ void serial_puts(const char* s) {
 
 ### タスク 1.4: MoonBitカーネルパッケージ作成
 
-```json
-// moon.pkg.json
-{
-  "supported-targets": ["native"],
-  "native-stub": [
-    "runtime/runtime_stubs.c",
-    "drivers/vga.c",
-    "drivers/serial.c"
-  ],
-  "link": {
-    "native": {
-      "cc": "i686-elf-gcc",
-      "cc-flags": "-ffreestanding -O2 -Wall -fno-stack-protector -mno-sse -mno-mmx",
-      "cc-link-flags": "-nostdlib -T linker.ld -lgcc"
-    }
-  }
-}
+```moonbit
+// moon.pkg
+options(
+  "supported-targets": [ "native" ],
+  "native-stub": [ "runtime/moon_kernel_ffi_host.c" ],
+)
 ```
 
 ```moonbit
-// kernel/main.mbt
+// moon_kernel.mbt
 
 // C関数のFFI宣言
 extern "C" fn c_vga_clear() = "vga_clear"
@@ -403,8 +401,8 @@ extern "C" fn c_vga_puts(s : Bytes) = "vga_puts_bytes"
 extern "C" fn c_serial_init() = "serial_init"
 extern "C" fn c_serial_puts(s : Bytes) = "serial_puts_bytes"
 
-// カーネルエントリポイント (boot.s から呼ばれる)
-pub fn kernel_entry() -> Unit {
+// カーネルエントリポイント (multiboot_boot.s から呼ばれる)
+pub fn moon_kernel_entry() -> Unit {
   c_serial_init()
   c_serial_puts(b"MoonBit OS: Serial initialized\n")
   c_vga_clear()
@@ -457,14 +455,14 @@ moonbit-gen:
 # Stage 2: 全てをクロスコンパイル
 MOONBIT_C = $(wildcard $(MOONBIT_BUILD)/kernel/*.c)
 C_SRCS    = drivers/vga.c drivers/serial.c drivers/vga_wrapper.c runtime/runtime_stubs.c
-ASM_SRCS  = arch/x86/boot.s
+ASM_SRCS  = arch/x86/multiboot_boot.s
 
-OBJS = boot.o $(notdir $(MOONBIT_C:.c=.o)) $(notdir $(C_SRCS:.c=.o))
+OBJS = multiboot_boot.o $(notdir $(MOONBIT_C:.c=.o)) $(notdir $(C_SRCS:.c=.o))
 
 kernel.elf: moonbit-gen $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o $@ -lgcc
 
-boot.o: arch/x86/boot.s
+multiboot_boot.o: arch/x86/multiboot_boot.s
 	$(AS) --32 $< -o $@
 
 # MoonBit生成Cファイル用のルール
@@ -768,7 +766,7 @@ MoonBitプログラムをOS専用のsyscallスタブ付きでコンパイルし�
 ### x86 vs ARM: 何が変わり、何が変わらないか
 
 **変わらないもの** (MoonBit層):
-- `kernel/main.mbt` — カーネルエントリポイント
+- `moon_kernel.mbt` — カーネルエントリポイント
 - `kernel/interrupts.mbt` — 割り込みディスパッチロジック
 - `kernel/proc.mbt` — プロセス管理
 - `kernel/alloc.mbt` — メモリアロケータロジック
@@ -1010,34 +1008,24 @@ aarch64-none-elf-gdb kernel8.elf \
   -ex "target remote :1234" -ex "break kernel_main" -ex "c"
 ```
 
-### ARM移植 タスク A.8: MoonBit統合 (moon.pkg.json)
+### ARM移植 タスク A.8: MoonBit統合 (moon.pkg)
 
-```json
-// moon.pkg.json (ARM用)
-{
-  "supported-targets": ["native"],
-  "native-stub": [
-    "runtime/runtime_stubs.c",
-    "drivers/uart_rpi.c"
-  ],
-  "link": {
-    "native": {
-      "cc": "aarch64-none-elf-gcc",
-      "cc-flags": "-ffreestanding -O2 -Wall -nostartfiles -mgeneral-regs-only",
-      "cc-link-flags": "-nostdlib -T linker.ld -lgcc"
-    }
-  }
-}
+```moonbit
+// moon.pkg (ARM用)
+options(
+  "supported-targets": [ "native" ],
+  "native-stub": [ "runtime/uart_rpi_ffi_host.c" ],
+)
 ```
 
 MoonBitカーネルコードはほぼ同一。出力先がVGAからUARTに変わるだけ:
 
 ```moonbit
-// kernel/main.mbt (ARM版 — 差分は最小)
+// moon_kernel.mbt (ARM版 — 差分は最小)
 extern "C" fn c_uart_init() = "uart_init"
 extern "C" fn c_uart_puts(s : Bytes) = "uart_puts_bytes"
 
-pub fn kernel_entry() -> Unit {
+pub fn moon_kernel_entry() -> Unit {
   c_uart_init()
   c_uart_puts(b"MoonBit OS v0.1 (ARM/Raspberry Pi)\n")
   c_uart_puts(b"Hello from MoonBit on bare metal ARM!\n")

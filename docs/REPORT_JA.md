@@ -42,20 +42,13 @@ OS開発にとって最も重要な発見はMoonBitのメモリ管理戦略だ�
 | `extern type T` | `void*` | RC管理**対象外** — MMIOに最適 |
 | `FuncRef[T]` | C関数ポインタ | キャプチャなし — ISRコールバックに使用可能 |
 
-ビルドシステムは`moon.pkg.json`経由でカスタムコンパイラフラグをサポートしている:
+ビルドシステムは`moon.pkg`経由でターゲット設定と`native-stub`を定義できる:
 
-```json
-{
-  "supported-targets": ["native"],
-  "native-stub": ["kernel_stubs.c"],
-  "link": {
-    "native": {
-      "cc": "i686-elf-gcc",
-      "cc-flags": "-ffreestanding -O2 -fno-stack-protector",
-      "cc-link-flags": "-nostdlib -T linker.ld -lgcc"
-    }
-  }
-}
+```moonbit
+options(
+  "supported-targets": [ "native" ],
+  "native-stub": [ "runtime/moon_kernel_ffi_host.c" ],
+)
 ```
 
 **中心的な課題は、MoonBitに公式の`--freestanding`モードがないこと。** ランタイムは`malloc`/`free`の存在を期待し、`println`には何らかの出力メカニズムが必要だ。これらは自分で提供しなければならない。しかしESP32-C3での先行事例——MoonBitがESP-IDF上のRISC-Vマイクロコントローラでコンウェイのライフゲームを実行——は、ネイティブCバックエンドが制約のある環境で動作することを証明している。違いは: ESP-IDFが`malloc`を含む完全なCライブラリを提供すること。ベアメタルOSカーネルでは、**自分がこれらのプリミティブの提供者になる**。
@@ -68,7 +61,7 @@ OS開発にとって最も重要な発見はMoonBitのメモリ管理戦略だ�
 
 ```
 ステージ1 (ホスト上):  MoonBitソース → moon build → Cファイル
-ステージ2 (クロス):    Cファイル + boot.s + stubs.c → i686-elf-gcc → .oファイル → リンカ → kernel.elf
+ステージ2 (クロス):    Cファイル + multiboot_boot.s + stubs.c → i686-elf-gcc → .oファイル → リンカ → kernel.elf
 ブート:               GRUBがMultiboot経由でkernel.elfをロード → kernel_main()
 ```
 
@@ -120,7 +113,7 @@ LDFLAGS  = -ffreestanding -nostdlib -T linker.ld -lgcc
 MOONBIT_C = moonbit_output.c
 # カーネルサポートCファイル群
 SUPPORT_C = runtime_stubs.c serial.c vga.c alloc.c idt.c
-ASM_SRC   = boot.s
+ASM_SRC   = multiboot_boot.s
 NASM_SRC  = isr_stubs.asm
 
 OBJS = boot.o isr_stubs.o $(MOONBIT_C:.c=.o) $(SUPPORT_C:.c=.o)
@@ -152,7 +145,7 @@ OSDev wikiのBare Bonesチュートリアル、Philipp Oppermannの"Writing an O
 
 MoonBitに触れる前に、**素のC**がベアメタルで動作することを証明する。これによりMoonBit統合のデバッグ時に変数を排除できる。
 
-Multiboot準拠のアセンブリブートスタブ（`boot.s`）を作成し、16 KiBスタックをセットアップして`kernel_main`を呼び出す。**Multiboot仕様**がここで本質的に重要——GRUB（およびQEMUの`-kernel`フラグ）はMultibootヘッダを持つ任意のELFバイナリをロードでき、リアルモード→プロテクトモード遷移、A20ライン、メモリ検出を代行してくれる。ブートアセンブリは約30行で済む:
+Multiboot準拠のアセンブリブートスタブ（`multiboot_boot.s`）を作成し、16 KiBスタックをセットアップして`kernel_main`を呼び出す。**Multiboot仕様**がここで本質的に重要——GRUB（およびQEMUの`-kernel`フラグ）はMultibootヘッダを持つ任意のELFバイナリをロードでき、リアルモード→プロテクトモード遷移、A20ライン、メモリ検出を代行してくれる。ブートアセンブリは約30行で済む:
 
 ```gas
 .set MAGIC, 0x1BADB002
@@ -188,14 +181,14 @@ _start:
 
 ここでMoonBitを統合する。目標: MoonBit生成Cコードが VGA経由で画面にテキストを表示する。
 
-**ステップ1: 最小限のMoonBitカーネルパッケージを作成。** `extern "C"` FFIを使ってCのVGAドライバを呼び出す、MoonBit版の`kernel_main`を書く:
+**ステップ1: 最小限のMoonBitカーネルパッケージを作成。** `extern "C"` FFIを使ってCのVGAドライバを呼び出す、MoonBit版のエントリポイント（`moon_kernel_entry`）を書く:
 
 ```moonbit
-// kernel/main.mbt
-extern "C" fn vga_puts(s : Bytes) -> Unit = "vga_puts_wrapper"
-extern "C" fn serial_puts(s : Bytes) -> Unit = "serial_puts_wrapper"
+// moon_kernel.mbt
+extern "C" fn vga_puts(s : Bytes) -> Unit = "moon_kernel_vga_puts"
+extern "C" fn serial_puts(s : Bytes) -> Unit = "moon_kernel_serial_puts"
 
-pub fn kernel_entry() -> Unit {
+pub fn moon_kernel_entry() -> Unit {
   vga_puts(b"MoonBit OS booting...\n")
   serial_puts(b"Serial debug output working\n")
 }
@@ -235,7 +228,7 @@ void* memset(void* s, int c, size_t n) {
 void abort(void) { __asm__ volatile("cli; hlt"); __builtin_unreachable(); }
 ```
 
-**ステップ3: ビルドとリンク。** `moon build --target native`を実行してCファイルを生成。生成された`.c`ファイルをコピーし、`i686-elf-gcc -ffreestanding -nostdlib`でコンパイル、ブートアセンブリおよびスタブとリンクする。厄介な部分は`moonbit.h`のインクルード——`#include <stdio.h>`等のホスト環境ヘッダをフリースタンディング版の同等物に置き換える修正が必要になる可能性がある。
+**ステップ3: ビルドとリンク。** `moon build --target native`でCファイルを生成し、`i686-elf-gcc -ffreestanding -nostdlib`でブートアセンブリおよびスタブとリンクする。現在の構成では`Makefile`の`MOON_INCLUDE_DIR`/`MOON_RUNTIME_C`で`~/.moon/include`と`$MOON_HOME/lib/runtime.c`を直接参照するため、リポジトリ内に`moonbit.h`や`runtime.c`を複製しない運用に統一できる。
 
 **ステップ4: デバッグ用シリアル出力。** COM1シリアルドライバ（ポート**0x3F8**）を実装——`outb`/`inb`インラインアセンブリを使って約20行のCだけで済む。QEMUの`-serial stdio`フラグがシリアル出力をターミナルにリダイレクトし、完全なVGAドライバを実装せずに`printf`相当のデバッグが可能になる。
 
@@ -365,7 +358,7 @@ RISC-Vボードは魅力的に安い（**Milk-V Duoが$5**、VisionFive 2が$55�
 3. **ランタイムスタブ**（50行）— `malloc`（バンプアロケータ）、`free`（no-op）、`memcpy`、`memset`、`abort`
 4. **CのVGAドライバ**（20行）— `0xB8000`に文字を書き込む
 5. **MoonBitカーネルエントリ**（10行）— VGAドライバへの`extern "C"` FFI呼び出し
-6. **MoonBitの`moonbit.h` + `runtime.c`**（フリースタンディング用に修正（ホスト環境の`#include`を削除）
+6. **MoonBitランタイム参照**（`~/.moon/include/moonbit.h` と `$MOON_HOME/lib/runtime.c` をビルド時参照）
 7. **i686-elfクロスコンパイラ** — すべてをベアメタルx86用にコンパイル
 
 カスタムコードの合計: **C/アセンブリ約150行** + MoonBitソース。"Hello Bare Metal"マイルストーンに到達するのは週末プロジェクトだ。そこから先、各フェーズはインクリメンタルに機能を追加していく。
@@ -375,23 +368,30 @@ RISC-Vボードは魅力的に安い（**Milk-V Duoが$5**、VisionFive 2が$55�
 ```
 moonbit-os/
 ├── moon.mod.json
-├── moon.pkg.json          # native-stub, cc-flags, cc-link-flags
+├── moon.pkg               # package-level options (native-stub など)
 ├── Makefile               # 2段階ビルド: moon build → cross-compile
 ├── linker.ld
+├── boot.s                 # 512-byte ブートセクタ経路
+├── moon_kernel.mbt        # ルートMoonBitエントリ（FFI宣言含む）
 ├── arch/x86/
-│   ├── boot.s             # Multibootエントリ
+│   ├── multiboot_boot.s   # Multibootエントリ
 │   ├── isr_stubs.asm      # 割り込みラッパー
 │   └── gdt.c              # GDT/TSSセットアップ
+├── cmd/moon_kernel/
+│   ├── main.mbt           # MoonBit main package entry
+│   └── moon.pkg           # is-main package 設定
 ├── runtime/
 │   ├── runtime_stubs.c    # malloc, free, memcpy, memset, abort
-│   ├── moonbit.h          # フリースタンディング用に修正
-│   └── runtime.c          # MoonBitランタイム（$MOON_HOME/lib/から）
+│   ├── moon_kernel_ffi.c  # MoonBit <-> C 文字列ブリッジ
+│   └── moon_kernel_ffi_host.c # MoonBit native codegen 用FFIスタブ
 ├── drivers/
 │   ├── vga.c              # VGAテキストモードドライバ
 │   └── serial.c           # COM1シリアル出力
 └── kernel/
-    ├── main.mbt           # カーネルエントリポイント
-    ├── console.mbt        # 高レベル出力抽象化
+    ├── main.c             # Cカーネルエントリ (Phase 0)
+    ├── moon_entry.c       # MoonBit呼び出しエントリ (Phase 1)
+    ├── fmt.c              # 最小フォーマット補助
+    ├── console.mbt        # 高レベル出力抽象化（将来）
     ├── alloc.mbt          # メモリアロケータ（後半フェーズ）
     ├── interrupts.mbt     # 割り込みディスパッチ
     └── proc.mbt           # プロセス管理（後半フェーズ）
