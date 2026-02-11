@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "arch/x86/idt.h"
+#include "arch/x86/keyboard.h"
 #include "arch/x86/pic.h"
 #include "arch/x86/pit.h"
 #include "drivers/vga.h"
@@ -25,6 +26,7 @@ static void irq_baseline_masking(void) {
         pic_set_mask(irq);
     }
     pic_clear_mask(0u);
+    pic_clear_mask(1u);
 }
 
 void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
@@ -36,7 +38,9 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     serial_puts("PIC remapped to vectors 0x20-0x2F.\n");
     irq_baseline_masking();
     pit_init(100u);
+    keyboard_init();
     serial_puts("PIT IRQ0 enabled at 100Hz.\n");
+    serial_puts("Keyboard IRQ1 enabled.\n");
 
     vga_clear();
     vga_puts("Hello from bare metal C kernel!\n");

@@ -74,7 +74,12 @@
   - Added rate-limited heartbeat (`[pit] heartbeat`) from IRQ0 handler (default once per second at 100Hz).
   - Enabled IRQ baseline masking (mask all, unmask IRQ0) and `sti` + idle loop in both kernel entry paths.
   - Verification: kernel/moon-kernel build+multiboot checks and serial boot logs with heartbeat output.
-- [ ] Step 7: Wire PS/2 keyboard IRQ (IRQ1) with scancode capture + serial logging.
+- [x] Step 7: Wire PS/2 keyboard IRQ (IRQ1) with scancode capture + serial logging.
+  - Added `arch/x86/keyboard.c` + `arch/x86/keyboard.h` and registered IRQ1 handler via `isr_register_irq_handler(1u, ...)`.
+  - Baseline IRQ mask now unmasks IRQ0 + IRQ1 in both entry paths; keyboard initialization wired into both kernels.
+  - IRQ1 handler reads status/data ports (`0x64`/`0x60`) and logs set-1 scancodes (supports `0xE0` prefix).
+  - Verification: kernel/moon-kernel build+multiboot checks and serial boot smoke tests.
+  - Pending interactive check: verify live keypress scancode logs in a non-headless QEMU run.
 - [ ] Step 8: Expose minimal MoonBit-facing interrupt API (ticks + keyboard event polling/queue).
 - [ ] Step 9: Run Phase 2 verification matrix (fault path + timer + keyboard + regression boot checks).
 - [ ] Step 10: Update docs (`README.md`, `README_JA.md`, `docs/README.md`, roadmap/report status) for Phase 2 progress.
