@@ -25,7 +25,8 @@ Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
 - Completed: shared `put_hex32()` formatter extracted to `kernel/fmt.c` (DRY).
 - Completed: QEMU boot-sector invocation fix (eliminated spurious error messages).
 - Completed: MoonBit kernel build dependency wiring updated to `moon.pkg` files in `Makefile`.
-- Completed: Phase 2 Step 2 IDT foundation (`arch/x86/idt.c`) with 256-entry table and `lidt` load path.
+- Completed: Phase 2 interrupt foundations (Steps 1-10)
+  (core implementation through Step 9: IDT/ISR/PIC/PIT/keyboard wiring, MoonBit polling API, and verification matrix including deterministic fault-path self-test; Step 10: documentation sync).
 
 ## Architecture Snapshot
 
@@ -64,4 +65,4 @@ Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
 
 ## Practical Next Step
 
-Follow [ROADMAP.md](./ROADMAP.md) phase-by-phase and keep this file as the high-level checklist.
+Start Phase 3 planning (allocator upgrade from bump-only to reusable free-list) and keep Step 9 verification commands as the regression baseline.

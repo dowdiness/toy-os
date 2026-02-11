@@ -7,7 +7,7 @@ Current state:
 - Boot-sector path: 16-bit startup -> 32-bit protected mode transition in `boot.s`.
 - Phase 0 kernel path: Multiboot + freestanding C kernel build is available.
 - Phase 1 kernel path: MoonBit-generated kernel path boots and logs via COM1 serial.
-- Phase 2 interrupt foundations: Step 2 completed (`arch/x86/idt.c`, `idt_init`, `lidt`) and wired into both C and MoonBit kernel paths.
+- Phase 2 interrupt foundations: completed (Steps 1-10; implementation through Step 9 + Step 10 documentation sync).
 
 ## Quickstart
 
@@ -36,11 +36,30 @@ make check-moon-kernel               # Validate Multiboot header
 make run-moon-kernel-serial          # Headless run + serial output
 ```
 
+## Phase 2 Verification (Step 9)
+
+```sh
+moon check --target native
+make kernel.elf && make check-kernel
+make moon-kernel.elf && make check-moon-kernel
+timeout 6s make run-kernel-serial
+timeout 6s make run-moon-kernel-serial
+```
+
+Fault-path self-test (optional, compile-time only):
+
+```sh
+make clean-kernel
+make kernel.elf KCFLAGS='-m32 -std=gnu11 -ffreestanding -O2 -Wall -Wextra -fno-stack-protector -fno-pie -fno-asynchronous-unwind-tables -fno-unwind-tables -MMD -MP -I. -DPHASE2_FAULT_TEST_INT3'
+timeout 6s qemu-system-i386 -kernel kernel.elf -serial stdio -display none -monitor none
+```
+
 ## Driver & Kernel Notes
 
 - VGA driver (`drivers/vga.c`) uses a RAM shadow buffer; only single-character writes hit VRAM directly, while bulk operations (scroll, clear) flush once.
 - Shared hex formatter (`kernel/fmt.c`) provides `put_hex32()` via function pointers, used by both VGA and serial output paths.
 - IDT foundation (`arch/x86/idt.c`) provides 256 entries, `idt_set_interrupt_gate()`, and `idt_load()` (`lidt`).
+- `kernel/main.c` has a guarded fault self-test hook (`PHASE2_FAULT_TEST_INT3`) for deterministic exception-path validation.
 
 ## Runtime Notes
 

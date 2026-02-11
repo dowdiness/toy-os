@@ -25,7 +25,8 @@
 - 完了: `put_hex32()` 共有フォーマッタを `kernel/fmt.c` に分離（DRY 改善）。
 - 完了: QEMU ブートセクタ起動の不要な警告・エラーメッセージを解消。
 - 完了: `Makefile` の MoonBit ビルド依存関係を `moon.pkg` ベースに修正。
-- 完了: Phase 2 Step 2 として IDT 基盤（`arch/x86/idt.c`、256 エントリ、`lidt`）を実装。
+- 完了: Phase 2 割り込み基盤（Step 1-10）
+  （実装本体は Step 9 まで: IDT/ISR/PIC/PIT/keyboard 配線、MoonBit ポーリング API、例外セルフテストを含む検証マトリクス。Step 10 はドキュメント同期）を完了。
 
 ---
 

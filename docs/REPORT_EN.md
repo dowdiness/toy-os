@@ -19,7 +19,8 @@ MoonBit's native backend can be used for bare-metal x86 development because it e
 - Implemented: MoonBit FFI `Bytes` ownership warnings resolved in `moon_kernel.mbt`
   with `#borrow` annotations on C extern bindings.
 - Implemented: Makefile MoonBit build dependency wiring migrated to `moon.pkg` files.
-- Implemented: Phase 2 Step 2 IDT foundation (`arch/x86/idt.c`) with 256 entries and `lidt`.
+- Implemented: Phase 2 interrupt foundations completed (Steps 1-10)
+  (core implementation through Step 9: IDT/ISR/PIC/PIT/keyboard wiring, MoonBit polling API, and verification matrix including deterministic fault-path self-test; Step 10: documentation sync).
 
 ## Key Findings
 

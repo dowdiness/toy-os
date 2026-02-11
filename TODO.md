@@ -102,10 +102,17 @@
   - Keyboard IRQ checks:
     - Injected synthetic keys via QEMU monitor (`sendkey a`, `sendkey ret`) while logging serial to file.
     - Observed `[kbd] scancode=... press/release` logs on the MoonBit kernel path.
+    - Explicitly closes Step 7 pending keyboard verification item (keypress-to-IRQ log path confirmed in Step 9).
   - Fault-path checks:
     - Added compile-time self-test hook in `kernel/main.c` guarded by `PHASE2_FAULT_TEST_INT3`.
     - Built with fault define and ran QEMU; observed deterministic panic dump:
       - `[isr] PANIC exception vector=0x00000003 ...`
       - register dump line + halt loop behavior.
     - Rebuilt without the define and re-ran regression/runtime checks to confirm normal behavior.
-- [ ] Step 10: Update docs (`README.md`, `README_JA.md`, `docs/README.md`, roadmap/report status) for Phase 2 progress.
+- [x] Step 10: Update docs (`README.md`, `README_JA.md`, `docs/README.md`, roadmap/report status) for Phase 2 progress.
+  - Updated top-level status summaries in `README.md` and `README_JA.md` to reflect Phase 2 Step 9 completion.
+  - Added Step 9 verification command set (including optional `PHASE2_FAULT_TEST_INT3` fault-path self-test) to both top-level READMEs.
+  - Updated `docs/README.md` current status to “Phase 2 Steps 2-9 completed.”
+  - Updated roadmap/report status sections:
+    - `docs/ROADMAP_EN.md`, `docs/ROADMAP.md`
+    - `docs/REPORT_EN.md`, `docs/REPORT_JA.md`

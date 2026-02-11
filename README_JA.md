@@ -7,7 +7,7 @@
 - ブートセクタ経路: `boot.s` で 16-bit 起動から 32-bit protected mode へ遷移。
 - Phase 0 カーネル経路: Multiboot + フリースタンディング C カーネルのビルドが可能。
 - Phase 1 カーネル経路: MoonBit 生成コードのカーネル経路が起動し、COM1 シリアルにログ出力可能。
-- Phase 2 割り込み基盤: Step 2（`arch/x86/idt.c`、`idt_init`、`lidt`）を完了し、C/MoonBit 両経路に組み込み済み。
+- Phase 2 割り込み基盤: 完了（Step 1-10。実装は Step 9 まで、Step 10 はドキュメント同期）。
 
 ## クイックスタート
 
@@ -36,11 +36,30 @@ make check-moon-kernel                  # Multiboot ヘッダ検証
 make run-moon-kernel-serial             # ヘッドレス実行 + シリアル出力
 ```
 
+## Phase 2 検証（Step 9）
+
+```sh
+moon check --target native
+make kernel.elf && make check-kernel
+make moon-kernel.elf && make check-moon-kernel
+timeout 6s make run-kernel-serial
+timeout 6s make run-moon-kernel-serial
+```
+
+例外経路セルフテスト（任意・コンパイル時のみ有効）:
+
+```sh
+make clean-kernel
+make kernel.elf KCFLAGS='-m32 -std=gnu11 -ffreestanding -O2 -Wall -Wextra -fno-stack-protector -fno-pie -fno-asynchronous-unwind-tables -fno-unwind-tables -MMD -MP -I. -DPHASE2_FAULT_TEST_INT3'
+timeout 6s qemu-system-i386 -kernel kernel.elf -serial stdio -display none -monitor none
+```
+
 ## ドライバ・カーネルメモ
 
 - VGA ドライバ (`drivers/vga.c`) は RAM 上のシャドウバッファを使用。1文字書込みのみ VRAM に直接反映し、スクロール・クリアは一括フラッシュ。
 - 共有 hex フォーマッタ (`kernel/fmt.c`) が `put_hex32()` を関数ポインタ経由で提供し、VGA / シリアル双方で利用。
 - IDT 基盤 (`arch/x86/idt.c`) で 256 エントリ、`idt_set_interrupt_gate()`、`idt_load()`（`lidt`）を提供。
+- `kernel/main.c` に、例外経路を決定的に検証するためのガード付きセルフテストフック（`PHASE2_FAULT_TEST_INT3`）を追加。
 
 ## ランタイムメモ
 
