@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "arch/x86/idt.h"
 #include "drivers/vga.h"
 #include "drivers/serial.h"
 #include "kernel/fmt.h"
@@ -8,6 +9,8 @@
 void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     serial_init();
     serial_puts("COM1 serial initialized.\n");
+    idt_init();
+    serial_puts("IDT loaded (256 entries).\n");
 
     vga_clear();
     vga_puts("Hello from bare metal C kernel!\n");

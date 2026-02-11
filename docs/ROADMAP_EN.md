@@ -24,6 +24,8 @@ Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
 - Completed: VGA shadow buffer to reduce MMIO traffic during scroll.
 - Completed: shared `put_hex32()` formatter extracted to `kernel/fmt.c` (DRY).
 - Completed: QEMU boot-sector invocation fix (eliminated spurious error messages).
+- Completed: MoonBit kernel build dependency wiring updated to `moon.pkg` files in `Makefile`.
+- Completed: Phase 2 Step 2 IDT foundation (`arch/x86/idt.c`) with 256-entry table and `lidt` load path.
 
 ## Architecture Snapshot
 

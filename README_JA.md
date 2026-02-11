@@ -7,6 +7,7 @@
 - ブートセクタ経路: `boot.s` で 16-bit 起動から 32-bit protected mode へ遷移。
 - Phase 0 カーネル経路: Multiboot + フリースタンディング C カーネルのビルドが可能。
 - Phase 1 カーネル経路: MoonBit 生成コードのカーネル経路が起動し、COM1 シリアルにログ出力可能。
+- Phase 2 割り込み基盤: Step 2（`arch/x86/idt.c`、`idt_init`、`lidt`）を完了し、C/MoonBit 両経路に組み込み済み。
 
 ## クイックスタート
 
@@ -39,6 +40,7 @@ make run-moon-kernel-serial             # ヘッドレス実行 + シリアル�
 
 - VGA ドライバ (`drivers/vga.c`) は RAM 上のシャドウバッファを使用。1文字書込みのみ VRAM に直接反映し、スクロール・クリアは一括フラッシュ。
 - 共有 hex フォーマッタ (`kernel/fmt.c`) が `put_hex32()` を関数ポインタ経由で提供し、VGA / シリアル双方で利用。
+- IDT 基盤 (`arch/x86/idt.c`) で 256 エントリ、`idt_set_interrupt_gate()`、`idt_load()`（`lidt`）を提供。
 
 ## ランタイムメモ
 

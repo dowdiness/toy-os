@@ -28,7 +28,7 @@ KCC          = $(KERNEL_CROSS)gcc
 KAS          = $(KERNEL_CROSS)as
 
 KERNEL_ELF   = kernel.elf
-KERNEL_OBJS  = arch/x86/multiboot_boot.o drivers/vga.o drivers/serial.o kernel/fmt.o kernel/main.o
+KERNEL_OBJS  = arch/x86/multiboot_boot.o arch/x86/idt.o drivers/vga.o drivers/serial.o kernel/fmt.o kernel/main.o
 
 KCFLAGS      = -m32 -std=gnu11 -ffreestanding -O2 -Wall -Wextra -fno-stack-protector -fno-pie -fno-asynchronous-unwind-tables -fno-unwind-tables -MMD -MP -I.
 KASFLAGS     = --32
@@ -47,7 +47,7 @@ MOON_GEN_C       ?= _build/native/debug/build/$(MOON_MAIN_PKG)/$(MOON_MAIN_NAME)
 MOON_GEN_O       ?= _build/native/debug/build/$(MOON_MAIN_PKG)/$(MOON_MAIN_NAME).o
 
 MOON_KERNEL_ELF  ?= moon-kernel.elf
-MOON_KERNEL_OBJS = arch/x86/multiboot_boot.o drivers/vga.o drivers/serial.o \
+MOON_KERNEL_OBJS = arch/x86/multiboot_boot.o arch/x86/idt.o drivers/vga.o drivers/serial.o \
                    runtime/runtime_stubs.o runtime/moon_kernel_ffi.o runtime/moon_runtime.o \
                    kernel/moon_entry.o $(MOON_GEN_O)
 MOON_KCFLAGS     = $(KCFLAGS) -DMOONBIT_NATIVE_NO_SYS_HEADER -I$(MOON_INCLUDE_DIR)
@@ -100,6 +100,9 @@ $(KERNEL_ELF): $(KERNEL_OBJS) linker.ld
 arch/x86/multiboot_boot.o: arch/x86/multiboot_boot.s
 	$(KAS) $(KASFLAGS) $< -o $@
 
+arch/x86/idt.o: arch/x86/idt.c arch/x86/idt.h
+	$(KCC) $(KCFLAGS) -c $< -o $@
+
 drivers/vga.o: drivers/vga.c
 	$(KCC) $(KCFLAGS) -c $< -o $@
 
@@ -133,7 +136,7 @@ clean-kernel:
 # -----------------------------------------------------------------
 moon-gen: $(MOON_GEN_C)
 
-$(MOON_GEN_C): moon.mod.json moon.pkg.json moon_kernel.mbt cmd/moon_kernel/moon.pkg.json cmd/moon_kernel/main.mbt runtime/moon_kernel_ffi_host.c
+$(MOON_GEN_C): moon.mod.json moon.pkg moon_kernel.mbt cmd/moon_kernel/moon.pkg cmd/moon_kernel/main.mbt runtime/moon_kernel_ffi_host.c
 	$(MOON) build --target native $(MOON_MAIN_PKG)
 
 $(MOON_GEN_O): $(MOON_GEN_C)

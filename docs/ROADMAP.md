@@ -24,6 +24,8 @@
 - 完了: VGA ドライバにシャドウバッファを導入し、スクロール時の MMIO 負荷を軽減。
 - 完了: `put_hex32()` 共有フォーマッタを `kernel/fmt.c` に分離（DRY 改善）。
 - 完了: QEMU ブートセクタ起動の不要な警告・エラーメッセージを解消。
+- 完了: `Makefile` の MoonBit ビルド依存関係を `moon.pkg` ベースに修正。
+- 完了: Phase 2 Step 2 として IDT 基盤（`arch/x86/idt.c`、256 エントリ、`lidt`）を実装。
 
 ---
 

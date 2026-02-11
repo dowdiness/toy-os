@@ -18,6 +18,8 @@ MoonBit's native backend can be used for bare-metal x86 development because it e
   (`malloc` overflow guard, `calloc` multiplication overflow guard, `realloc` content preservation).
 - Implemented: MoonBit FFI `Bytes` ownership warnings resolved in `moon_kernel.mbt`
   with `#borrow` annotations on C extern bindings.
+- Implemented: Makefile MoonBit build dependency wiring migrated to `moon.pkg` files.
+- Implemented: Phase 2 Step 2 IDT foundation (`arch/x86/idt.c`) with 256 entries and `lidt`.
 
 ## Key Findings
 

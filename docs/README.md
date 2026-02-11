@@ -7,6 +7,7 @@ Use this read order to minimize context size while keeping references clear.
 
 - Phase 0 (C kernel path): available and validated with Multiboot checks.
 - Phase 1 (MoonBit kernel path): baseline complete with serial output and validated build path.
+- Phase 2 (interrupt foundations): in progress; Step 2 (IDT setup + `lidt`) completed.
 
 ## Recommended Read Order (Token-Efficient)
 

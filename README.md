@@ -7,6 +7,7 @@ Current state:
 - Boot-sector path: 16-bit startup -> 32-bit protected mode transition in `boot.s`.
 - Phase 0 kernel path: Multiboot + freestanding C kernel build is available.
 - Phase 1 kernel path: MoonBit-generated kernel path boots and logs via COM1 serial.
+- Phase 2 interrupt foundations: Step 2 completed (`arch/x86/idt.c`, `idt_init`, `lidt`) and wired into both C and MoonBit kernel paths.
 
 ## Quickstart
 
@@ -39,6 +40,7 @@ make run-moon-kernel-serial          # Headless run + serial output
 
 - VGA driver (`drivers/vga.c`) uses a RAM shadow buffer; only single-character writes hit VRAM directly, while bulk operations (scroll, clear) flush once.
 - Shared hex formatter (`kernel/fmt.c`) provides `put_hex32()` via function pointers, used by both VGA and serial output paths.
+- IDT foundation (`arch/x86/idt.c`) provides 256 entries, `idt_set_interrupt_gate()`, and `idt_load()` (`lidt`).
 
 ## Runtime Notes
 
