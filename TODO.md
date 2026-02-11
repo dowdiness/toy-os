@@ -69,7 +69,11 @@
 - [x] Step 5.h: Add spurious IRQ7/IRQ15 filtering (PIC ISR check) before EOI for robustness.
   - Added `pic_get_isr()` in `arch/x86/pic.c` and spurious handling in dispatcher (IRQ15 sends master cascade EOI only).
   - Verification: kernel/moon-kernel build+multiboot checks and serial boot smoke tests.
-- [ ] Step 6: Wire PIT timer IRQ (IRQ0) with tick counter + rate-limited serial heartbeat.
+- [x] Step 6: Wire PIT timer IRQ (IRQ0) with tick counter + rate-limited serial heartbeat.
+  - Added `arch/x86/pit.c` + `arch/x86/pit.h` with PIT programming, IRQ0 handler registration, and tick counter.
+  - Added rate-limited heartbeat (`[pit] heartbeat`) from IRQ0 handler (default once per second at 100Hz).
+  - Enabled IRQ baseline masking (mask all, unmask IRQ0) and `sti` + idle loop in both kernel entry paths.
+  - Verification: kernel/moon-kernel build+multiboot checks and serial boot logs with heartbeat output.
 - [ ] Step 7: Wire PS/2 keyboard IRQ (IRQ1) with scancode capture + serial logging.
 - [ ] Step 8: Expose minimal MoonBit-facing interrupt API (ticks + keyboard event polling/queue).
 - [ ] Step 9: Run Phase 2 verification matrix (fault path + timer + keyboard + regression boot checks).

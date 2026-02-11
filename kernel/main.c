@@ -1,11 +1,31 @@
 #include <stdint.h>
 #include "arch/x86/idt.h"
 #include "arch/x86/pic.h"
+#include "arch/x86/pit.h"
 #include "drivers/vga.h"
 #include "drivers/serial.h"
 #include "kernel/fmt.h"
 
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002u
+
+static void enable_interrupts(void) {
+    __asm__ volatile("sti");
+}
+
+static void cpu_idle_forever(void) {
+    for (;;) {
+        __asm__ volatile("hlt");
+    }
+}
+
+static void irq_baseline_masking(void) {
+    uint8_t irq;
+
+    for (irq = 0u; irq < 16u; ++irq) {
+        pic_set_mask(irq);
+    }
+    pic_clear_mask(0u);
+}
 
 void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     serial_init();
@@ -14,6 +34,9 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     serial_puts("IDT loaded (256 entries).\n");
     pic_remap(0x20u, 0x28u);
     serial_puts("PIC remapped to vectors 0x20-0x2F.\n");
+    irq_baseline_masking();
+    pit_init(100u);
+    serial_puts("PIT IRQ0 enabled at 100Hz.\n");
 
     vga_clear();
     vga_puts("Hello from bare metal C kernel!\n");
@@ -40,4 +63,7 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
 
     vga_puts("Kernel C path is running.\n");
     serial_puts("Kernel C path is running.\n");
+
+    enable_interrupts();
+    cpu_idle_forever();
 }
