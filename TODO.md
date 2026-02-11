@@ -51,7 +51,11 @@
   - Added `arch/x86/idt.c` + `arch/x86/idt.h` with 256-entry IDT, `idt_set_interrupt_gate`, and `idt_load` (`lidt`).
   - Wired `idt_init()` into both `kernel/main.c` and `kernel/moon_entry.c`.
   - Verification: `make kernel.elf && make check-kernel` and `make moon-kernel.elf && make check-moon-kernel`.
-- [ ] Step 3: Add assembly ISR/IRQ stubs (`arch/x86/isr_stubs.asm`) with shared C dispatcher entry.
+- [x] Step 3: Add assembly ISR/IRQ stubs (`arch/x86/isr_stubs.asm`) with shared C dispatcher entry.
+  - Added exception stubs (vectors 0-31) and IRQ stubs (vectors 32-47) with a unified common entry.
+  - Added shared C dispatcher entry (`arch/x86/isr_dispatch.c`) and frame definition (`arch/x86/isr_dispatch.h`).
+  - `idt_init()` now installs default gates from the stub table before `lidt`.
+  - Verification: `make kernel.elf && make check-kernel`, `make moon-kernel.elf && make check-moon-kernel`, serial boot smoke tests for both paths.
 - [ ] Step 4: Add PIC remap + IRQ mask/EOI control (master/slave PIC at remapped vectors).
 - [ ] Step 5: Implement common interrupt dispatcher + exception panic path (vector/error/EIP over serial).
 - [ ] Step 6: Wire PIT timer IRQ (IRQ0) with tick counter + rate-limited serial heartbeat.

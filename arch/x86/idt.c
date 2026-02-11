@@ -20,6 +20,9 @@ struct idt_descriptor {
     uint32_t base;
 } __attribute__((packed));
 
+extern void (*g_interrupt_stub_table[])(void);
+extern void (*g_interrupt_stub_table_end[])(void);
+
 static struct idt_entry g_idt[IDT_ENTRY_COUNT];
 static struct idt_descriptor g_idtr;
 
@@ -62,6 +65,20 @@ void idt_set_interrupt_gate(uint8_t vector, void (*handler)(void)) {
     entry->offset_high = (uint16_t)((handler_addr >> 16) & 0xFFFFu);
 }
 
+static void idt_install_default_gates(void) {
+    uint32_t index;
+    uint32_t count;
+
+    count = (uint32_t)(g_interrupt_stub_table_end - g_interrupt_stub_table);
+    if (count > IDT_ENTRY_COUNT) {
+        count = IDT_ENTRY_COUNT;
+    }
+
+    for (index = 0; index < count; ++index) {
+        idt_set_interrupt_gate((uint8_t)index, g_interrupt_stub_table[index]);
+    }
+}
+
 void idt_load(void) {
     g_idtr.limit = (uint16_t)(sizeof(g_idt) - 1u);
     g_idtr.base = (uint32_t)(uintptr_t)&g_idt[0];
@@ -70,5 +87,6 @@ void idt_load(void) {
 
 void idt_init(void) {
     idt_clear();
+    idt_install_default_gates();
     idt_load();
 }
