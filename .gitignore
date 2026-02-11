@@ -1,3 +1,68 @@
+# ============================================
+# MoonBit Toy OS — .gitignore
+# ============================================
+
+# ------ MoonBit build output ------
+target/
+.mooncakes/
+
+# ------ Cross-compilation artifacts ------
+# Object files
+*.o
+*.obj
+
+# Executables / Kernels
+*.elf
+*.bin
+*.img
+*.out
+*.exe
+
+# Libraries
+*.a
+*.lib
+
+# Preprocessor output
+*.i
+*.ii
+
+# Dependency files (gcc -MMD)
+*.d
+
+# Map files (linker)
+*.map
+
+# ------ QEMU / Emulator ------
+*.iso
+serial.log
+
+# ------ Cross-compiler build (if built locally) ------
+# Uncomment if you build i686-elf-gcc inside the repo
+# opt/
+# src/build-binutils/
+# src/build-gcc/
+
+# ------ Raspberry Pi SD card staging ------
+# Firmware files downloaded for SD card prep
+sdcard/bootcode.bin
+sdcard/start.elf
+sdcard/fixup.dat
+sdcard/kernel8.img
+
+# ------ Editor / IDE ------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ------ OS-generated ------
+.DS_Store
+Desktop.ini
+
+# boot
 boot.img
 boot.elf
 boot_512.img

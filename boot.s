@@ -1,50 +1,119 @@
-# boot.s
+# boot.s - 32-bit Protected Mode Bootloader
 
-.code16                # CPUを16ビットリアルモードに設定する
-# .global start          # リンカ/ローダのために 'start' シンボルを公開
+.code16
+.global _start
 
-.org 0x0               # ファイルの先頭（ブートセクタの開始アドレス）からコードを配置
+.section .text
+_start:
+    jmp start
+
+# =================================================================
+# GDT (先頭付近に配置)
+# =================================================================
+.align 8
+gdt_start:
+    .quad 0x0                      # Null descriptor
+gdt_code:
+    .word 0xFFFF, 0x0000
+    .byte 0x00, 0b10011010, 0b11001111, 0x00
+gdt_data:
+    .word 0xFFFF, 0x0000
+    .byte 0x00, 0b10010010, 0b11001111, 0x00
+gdt_end:
+
+gdt_descriptor:
+    .word gdt_end - gdt_start - 1
+    .long gdt_start
 
 start:
-    cli                # 割り込みを無効化
-    cld                # 文字列操作の方向フラグを前方（増加）に設定
+    cli
+    cld
 
-    # === レジスタの初期化 ===
-    # セグメントレジスタを確実に0に設定する
-    xorw %ax, %ax      # AX レジスタを 0 にクリア
-    movw %ax, %ds      # DS (データセグメント) を 0 に設定
-    movw %ax, %es      # ES (エクストラセグメント) を 0 に設定
+    # セグメントレジスタ初期化
+    xorw %ax, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %ss
+    mov $0x7c00, %sp
 
-    # === スタックの設定 ===
-    # SP (スタックポインタ) を 0x7c00 に設定し、SS (スタックセグメント) を 0 に設定
-    mov $0x7c00, %sp   # SP を設定
-    movw %ax, %ss      # SS を 0 に設定
+    # 16-bit メッセージ
+    mov $msg_realmode, %si
+    call print16
 
-    # メッセージのアドレスを SI (ソースインデックス) に設定
-    mov $message, %si
+    # A20有効化 (Fast A20)
+    in $0x92, %al
+    or $0x02, %al
+    and $0xFE, %al
+    out %al, $0x92
 
-# === 文字列表示ループ ===
-print:
-    lodsb              # DS:SI が指すバイト (メッセージ文字) を AL にロードし、SIをインクリメント
-    cmp $0, %al        # ロードした文字 (AL) がヌル文字 (終端) かチェック
-    je stop            # ヌル文字であれば 'stop' へジャンプ
+    mov $msg_a20, %si
+    call print16
 
-    # === BIOSコール (文字表示) ===
-    mov $0x0e, %ah     # AH=0x0e は、BIOSの「Teletype出力サービス」
-    mov $0x0, %bx      # BH=0 (表示ページ番号)
-    int $0x10          # BIOSサービスコールを実行し、AL の文字を画面に出力する
+    # GDTロード
+    lgdt gdt_descriptor
 
-    jmp print          # 次の文字を処理するためにループの先頭に戻る
+    mov $msg_gdt, %si
+    call print16
 
-# === 停止 ===
-stop:
-    hlt                # CPUを停止させる
+    # プロテクトモードへ
+    mov %cr0, %eax
+    or $0x1, %eax
+    mov %eax, %cr0
 
-message:
-    .byte 0x0D, 0x0A      # 画面を次の行の先頭に移動 (改行コード)
-    .asciz "Hello, World!"
+    ljmp $0x08, $pm_start
 
-# === ブートセクタの定義 ===
-# コードとメッセージの後にパディングを挿入し、ファイルの510バイト目まで移動
-. = start + 510
-.word 0xaa55           # MBRのシグネチャ
+# --- 16-bit 文字列表示 ---
+print16:
+    lodsb
+    test %al, %al
+    jz 1f
+    mov $0x0e, %ah
+    int $0x10
+    jmp print16
+1:  ret
+
+msg_realmode: .asciz "Real Mode\r\n"
+msg_a20:      .asciz "A20\r\n"
+msg_gdt:      .asciz "PM...\r\n"
+
+# =================================================================
+# 32-bit Protected Mode
+# =================================================================
+.code32
+pm_start:
+    # データセグメント設定
+    mov $0x10, %eax
+    mov %ax, %ds
+    mov %ax, %es
+    mov %ax, %ss
+    mov $0x90000, %esp
+
+    # 画面クリア (最初の行)
+    mov $0xB8000, %edi
+    mov $80, %ecx
+    mov $0x0A20, %ax        # 緑背景スペース
+    rep stosw
+
+    # メッセージ表示
+    mov $0xB8000, %edi
+    mov $msg_pm, %esi
+    mov $0x0A, %ah          # 緑色
+
+.pm_print:
+    lodsb
+    test %al, %al
+    jz .pm_halt
+    stosw
+    jmp .pm_print
+
+.pm_halt:
+    hlt
+    jmp .pm_halt
+
+msg_pm: .asciz "32-bit Protected Mode OK!"
+
+# =================================================================
+# Boot signature
+# =================================================================
+.org 510
+.word 0xAA55
