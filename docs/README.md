@@ -19,12 +19,12 @@ Use this read order to minimize context size while keeping references clear.
 2. [ROADMAP_EN.md](./ROADMAP_EN.md) or [ROADMAP.md](./ROADMAP.md)
    - Use [ROADMAP_EN.md](./ROADMAP_EN.md) for a compact English plan.
    - Use [ROADMAP.md](./ROADMAP.md) for full detailed Japanese planning notes.
-2.5. Phase implementation specs (when working on a specific phase):
+3. Phase implementation specs (when working on a specific phase):
    - [SPEC_PHASE3_MEMORY.md](./SPEC_PHASE3_MEMORY.md): Phase 3 memory management.
    - [SPEC_PHASE5A_CAPABILITY_SYSCALL.md](./SPEC_PHASE5A_CAPABILITY_SYSCALL.md): Phase 5a capability syscall.
-3. [REPORT_EN.md](./REPORT_EN.md) or [REPORT_JA.md](./REPORT_JA.md)
+4. [REPORT_EN.md](./REPORT_EN.md) or [REPORT_JA.md](./REPORT_JA.md)
    - Use summary (`_EN`) first, then deep report (`_JA`) only when needed.
-4. [tutorial-01-protected-mode.md](./tutorial-01-protected-mode.md)
+5. [tutorial-01-protected-mode.md](./tutorial-01-protected-mode.md)
    - Focused implementation tutorial for protected mode transition.
 
 ## Canonical vs Companion Docs

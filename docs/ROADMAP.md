@@ -724,11 +724,11 @@ Multibootモジュールとして初期プログラムをロードするフラ�
 
 ### タスク 6.3: MoonBitユーザーランドアプリ
 
-MoonBitプログラムをOS専用のcapability handle 経由の syscallスタブ付きでコンパイルし、ユーザーランドで実行。
+MoonBitプログラムをOS専用のcapability syscall スタブ付きでコンパイルし、ユーザーランドで実行。
 
 **検証**:
 - シェルでコマンドを入力し、結果が表示される
-- MoonBitで書いたユーザープログラムがcapability handle 経由の syscallでテキスト出力
+- MoonBitで書いたユーザープログラムがcapability syscall 経由でテキスト出力
 - `ps` でプロセス一覧が表示される
 
 ---
