@@ -8,6 +8,8 @@ Use this read order to minimize context size while keeping references clear.
 - Phase 0 (C kernel path): available and validated with Multiboot checks.
 - Phase 1 (MoonBit kernel path): baseline complete with serial output and validated build path.
 - Phase 2 (interrupt foundations): completed (Steps 1-10; implementation through Step 9 and Step 10 docs sync).
+- Phase 3 (memory management): spec complete, implementation pending.
+- Phase 5 architecture: split into 5a/5b/5c; capability-based security model adopted.
 
 ## Recommended Read Order (Token-Efficient)
 
@@ -17,6 +19,9 @@ Use this read order to minimize context size while keeping references clear.
 2. [ROADMAP_EN.md](./ROADMAP_EN.md) or [ROADMAP.md](./ROADMAP.md)
    - Use [ROADMAP_EN.md](./ROADMAP_EN.md) for a compact English plan.
    - Use [ROADMAP.md](./ROADMAP.md) for full detailed Japanese planning notes.
+2.5. Phase implementation specs (when working on a specific phase):
+   - [SPEC_PHASE3_MEMORY.md](./SPEC_PHASE3_MEMORY.md): Phase 3 memory management.
+   - [SPEC_PHASE5A_CAPABILITY_SYSCALL.md](./SPEC_PHASE5A_CAPABILITY_SYSCALL.md): Phase 5a capability syscall.
 3. [REPORT_EN.md](./REPORT_EN.md) or [REPORT_JA.md](./REPORT_JA.md)
    - Use summary (`_EN`) first, then deep report (`_JA`) only when needed.
 4. [tutorial-01-protected-mode.md](./tutorial-01-protected-mode.md)

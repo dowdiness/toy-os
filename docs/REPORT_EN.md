@@ -10,7 +10,7 @@ This file is a compact English companion to the canonical deep report:
 
 MoonBit's native backend can be used for bare-metal x86 development because it emits C and relies on reference counting (Perceus style), not a tracing garbage collector. In practice, this means the runtime surface is manageable for OS work, but you must supply freestanding runtime dependencies yourself.
 
-## Status Delta (February 11, 2026)
+## Status Delta (February 15, 2026)
 
 - Implemented: Multiboot C kernel path (`kernel.elf`) with serial diagnostics.
 - Implemented: initial MoonBit kernel path (`moon-kernel.elf`) booting and emitting serial logs.
@@ -22,12 +22,17 @@ MoonBit's native backend can be used for bare-metal x86 development because it e
 - Implemented: Phase 2 interrupt foundations completed (Steps 1-10)
   (core implementation through Step 9: IDT/ISR/PIC/PIT/keyboard wiring, MoonBit polling API, and verification matrix including deterministic fault-path self-test; Step 10: documentation sync).
 
+- Planned: Phase 3 memory management spec (SPEC_PHASE3_MEMORY.md) — physical page allocator, paging, free-list heap.
+- Decision: Capability-based security model for Phase 5. Phase 5 split into 5a (capability syscall + ELF), 5b (Wasm), 5c (structured concurrency).
+- Planned: Phase 5a spec (SPEC_PHASE5A_CAPABILITY_SYSCALL.md) — 8 syscalls, handle table, delegation model.
+
 ## Key Findings
 
 1. MoonBit -> C generation fits a two-stage kernel build pipeline.
 2. The runtime model is OS-friendlier than tracing GC designs.
 3. Main integration risk is freestanding compatibility of runtime symbols/headers.
 4. Early serial output and strict milestone progression reduce debugging cost.
+5. Capability-based syscall design eliminates ambient authority by requiring explicit handles with rights bits for all resource access.
 
 ## Minimal Pipeline
 

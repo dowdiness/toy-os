@@ -11,7 +11,7 @@ This file is a compact English companion to the canonical roadmap:
 Use this file for quick planning context with minimal tokens.
 Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
 
-## Implementation Status (February 11, 2026)
+## Implementation Status (February 15, 2026)
 
 - Completed: boot-sector path with 16-bit -> 32-bit transition.
 - Completed: Phase 0 C kernel path (`kernel.elf`) with Multiboot validation.
@@ -27,6 +27,11 @@ Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
 - Completed: MoonBit kernel build dependency wiring updated to `moon.pkg` files in `Makefile`.
 - Completed: Phase 2 interrupt foundations (Steps 1-10)
   (core implementation through Step 9: IDT/ISR/PIC/PIT/keyboard wiring, MoonBit polling API, and verification matrix including deterministic fault-path self-test; Step 10: documentation sync).
+
+- Planned: Phase 3 memory management spec authored (SPEC_PHASE3_MEMORY.md).
+- Planned: Phase 5 split into 5a (capability syscall) / 5b (Wasm) / 5c (structured concurrency).
+- Planned: Phase 5a capability syscall spec authored (SPEC_PHASE5A_CAPABILITY_SYSCALL.md).
+- Decision: Capability-based security model adopted (no global namespace).
 
 ## Architecture Snapshot
 
@@ -56,13 +61,19 @@ Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
    - Set up GDT/IDT.
    - Add ISR stubs + PIC remapping.
    - Wire timer/keyboard paths.
-4. Phase 3: Memory management upgrades.
-   - Move from bump allocator to reusable allocator.
-   - Validate RC-driven allocation/free behavior under load.
-5. Phase 4+: Process model and userland experiments.
-   - Introduce task/process abstraction.
-   - Explore MoonBit-based user-space binaries/calls.
+4. Phase 3: Memory management.
+   - Physical page frame allocator, identity-mapped paging, free-list heap.
+   - Spec: SPEC_PHASE3_MEMORY.md
+5. Phase 4: Process management + scheduling.
+   - PCB with reserved fields for capability and scope/cancel.
+   - Context switch + round-robin scheduler.
+6. Phase 5a: Capability syscall + ELF userland.
+   - Handle-based syscall ABI, no ambient authority.
+   - Spec: SPEC_PHASE5A_CAPABILITY_SYSCALL.md
+7. Phase 5b: Wasm userland.
+8. Phase 5c: Structured concurrency (scope/cancel).
+9. Phase 6: Shell + MoonBit user apps.
 
 ## Practical Next Step
 
-Start Phase 3 planning (allocator upgrade from bump-only to reusable free-list) and keep Step 9 verification commands as the regression baseline.
+Execute Phase 3 per SPEC_PHASE3_MEMORY.md (Steps 3-1 through 3-9).

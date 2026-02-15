@@ -116,3 +116,18 @@
   - Updated roadmap/report status sections:
     - `docs/ROADMAP_EN.md`, `docs/ROADMAP.md`
     - `docs/REPORT_EN.md`, `docs/REPORT_JA.md`
+
+## Phase 3: メモリ管理（Step 5）
+
+仕様書: [docs/SPEC_PHASE3_MEMORY.md](docs/SPEC_PHASE3_MEMORY.md)
+（Step 番号は仕様書の Section 10 に準拠。仕様書が更新された場合はここも追従させること。）
+
+- [ ] Step 3-1: linker.ld に __kernel_end シンボル追加
+- [ ] Step 3-2: kernel/multiboot.h + multiboot.c 実装（メモリマップ解析）
+- [ ] Step 3-3: kernel/pmm.h + pmm.c 実装（ビットマップ物理ページアロケータ）
+- [ ] Step 3-4: kernel/paging.h + paging.c 実装（恒等マッピング + CR0.PG）
+- [ ] Step 3-5: ページフォルトハンドラ（ベクタ 14 で CR2 出力）
+- [ ] Step 3-6: runtime/heap.h + heap.c 実装（free-list アロケータ）
+- [ ] Step 3-7: kernel/moon_entry.c に Phase 3 初期化統合
+- [ ] Step 3-8: Makefile 更新 + 全ビルドパス回帰
+- [ ] Step 3-9: 全検証マトリクス + ドキュメント同期

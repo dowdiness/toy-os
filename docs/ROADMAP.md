@@ -11,7 +11,7 @@
 - ブートシーケンスの実装手順は [tutorial-01-protected-mode.md](./tutorial-01-protected-mode.md) を参照してください。
 - 文書全体の読み順は [README.md](./README.md) を参照してください。
 
-## 実装状況（2026-02-11）
+## 実装状況（2026-02-15）
 
 - 完了: ブートセクタ経路（16-bit -> 32-bit protected mode 遷移）。
 - 完了: Phase 0 Cカーネル経路（`kernel.elf`）と Multiboot 検証。
@@ -27,6 +27,10 @@
 - 完了: `Makefile` の MoonBit ビルド依存関係を `moon.pkg` ベースに修正。
 - 完了: Phase 2 割り込み基盤（Step 1-10）
   （実装本体は Step 9 まで: IDT/ISR/PIC/PIT/keyboard 配線、MoonBit ポーリング API、例外セルフテストを含む検証マトリクス。Step 10 はドキュメント同期）を完了。
+- 計画確定: Phase 3 メモリ管理の詳細仕様書を作成（[SPEC_PHASE3_MEMORY.md](./SPEC_PHASE3_MEMORY.md)）
+- 計画確定: Phase 5 を 5a（capability syscall + ELF）/ 5b（Wasm）/ 5c（structured concurrency）に分割
+- 計画確定: Phase 5a capability syscall の詳細仕様書を作成（[SPEC_PHASE5A_CAPABILITY_SYSCALL.md](./SPEC_PHASE5A_CAPABILITY_SYSCALL.md)）
+- 設計決定: capability ベースのセキュリティモデルを採用（グローバル名前空間排除）
 
 ---
 
@@ -587,48 +591,43 @@ MoonBitのパターンマッチでスキャンコード→ASCIIの変換テー�
 
 ---
 
+## 設計原則（Phase 3 以降に適用）
+
+- **権限は縮小のみ（capability monotonicity）**: capability の権限ビットは生成後に増やせない。DUP や SPAWN で子に渡す際、親の権限のサブセットのみ許可
+- **ハンドルが無ければ不可（no ambient authority）**: プロセスは明示的に渡されたハンドル以外のリソースにアクセスする手段を持たない。グローバル名前空間（パス名、ポート番号）は存在しない
+- **委譲はサブセット（delegation subset）**: 子プロセスの権限 ⊆ 親プロセスの権限。親が持たない権限を子に与えることはできない
+
+詳細は各 Phase の仕様書を参照。
+
+---
+
 ## Phase 3: メモリ管理
 
 **ゴール**: 物理メモリ管理 + ページング + 適切なヒープアロケータ（Perceus RCが正しく動作する）
 
-### タスク 3.1: Multibootメモリマップ解析
+**詳細仕様**: [SPEC_PHASE3_MEMORY.md](./SPEC_PHASE3_MEMORY.md) — Phase 3 の正本仕様。以下は要約。
 
-GRUBがEBXレジスタ経由で渡すメモリマップを解析し、利用可能なRAM領域を特定。
+### 実装ステップ（9段階）
 
-### タスク 3.2: 物理メモリマネージャ (ビットマップ)
+| Step | 内容 |
+|------|------|
+| 3-1 | linker.ld に `__kernel_end` シンボル追加 |
+| 3-2 | Multiboot メモリマップ解析（kernel/multiboot.h, .c） |
+| 3-3 | ビットマップ物理ページアロケータ（kernel/pmm.h, .c） |
+| 3-4 | 恒等マッピング + ページング有効化（kernel/paging.h, .c） |
+| 3-5 | ページフォルトハンドラ（ベクタ 14 で CR2 出力） |
+| 3-6 | free-list ヒープアロケータ（runtime/heap.h, .c） |
+| 3-7 | MoonBit パスに Phase 3 初期化統合 |
+| 3-8 | Makefile 更新 + 全ビルドパス回帰 |
+| 3-9 | 全検証マトリクス + ドキュメント同期 |
 
-4 KiB物理ページフレームのビットマップアロケータ。
-MoonBitの `FixedArray[UInt]` はCの `uint32_t*` に直接マップされるためビット操作に適している。
+### 受け入れテスト
 
-### タスク 3.3: ページング (2レベルページテーブル)
-
-- ページディレクトリ + ページテーブルのセットアップ
-- カーネル領域とVGAバッファの恒等マッピング
-- CR3レジスタ操作用のアセンブリヘルパー
-
-### タスク 3.4: フリーリストヒープアロケータ
-
-**最重要タスク**: Perceus参照カウントは `free()` を頻繁に呼ぶため、適切なアロケータが必須。
-
-```c
-// runtime/alloc.c
-typedef struct block_header {
-    size_t size;
-    int is_free;
-    struct block_header* next;
-} block_header_t;
-
-// First-fit フリーリストアロケータ
-void* malloc(size_t size);  // フリーリストから適切なブロックを探す
-void  free(void* ptr);      // ブロックをフリーリストに返却 + 隣接ブロックとマージ
-```
-
-**注意**: 参照サイクルはPerceusでは検出されない。カーネルデータ構造（双方向リンクリスト等）では手動で対処が必要。
-
-**検証**:
-- malloc/free が正しく動作する（確保→解放→再確保のテスト）
-- ページフォルトが適切にハンドルされる
-- MoonBitのオブジェクト確保/解放がリークしない（シリアルでヒープ使用量を監視）
+1. `[mmap] entries: ...` が出力される
+2. `[pmm] total=..., free=...` が出力される（いずれも 0 は禁止）
+3. `[paging] enabled` 後も `[pit] heartbeat` が継続する
+4. `[heap-test]` の全項目が OK
+5. MoonBit パスが Phase 2 と同等に起動しクラッシュしない
 
 ---
 
@@ -654,6 +653,15 @@ struct Process {
 }
 ```
 
+**Phase 5 向け予約フィールド（Phase 4 では初期値のまま）:**
+
+- `cap_table`: capability ハンドルテーブル（Phase 5a でアクティブ化。Phase 4 では空テーブル）
+- `parent_pid`: 親プロセス ID（Phase 5a の delegation で使用）
+- `scope_id`: スコープ ID（Phase 5c でアクティブ化。Phase 4 では常に 0）
+- `wait_token`: ブロッキング I/O トークン（Phase 5c でアクティブ化。Phase 4 では常に 0）
+
+これらのフィールドの詳細は [SPEC_PHASE5A_CAPABILITY_SYSCALL.md](./SPEC_PHASE5A_CAPABILITY_SYSCALL.md) Section 8 を参照。
+
 ### タスク 4.2: コンテキストスイッチ (アセンブリ)
 
 レジスタ保存/復帰 + CR3切り替え（アドレス空間切り替え）。約20行のアセンブリ。
@@ -669,39 +677,35 @@ MoonBitのパターンマッチでスケジューラロジックを記述。
 
 ---
 
-## Phase 5: Ring 3 ユーザーランド
+## Phase 5a: Capability Syscall + ELF ユーザーランド
 
-**ゴール**: Ring 3（ユーザーモード）でプログラムが実行される
+**ゴール**: ハンドルベースの capability syscall で Ring 3 プロセスがリソースにアクセスする
 
-### タスク 5.1: TSS設定
+**詳細仕様**: [SPEC_PHASE5A_CAPABILITY_SYSCALL.md](./SPEC_PHASE5A_CAPABILITY_SYSCALL.md) — Phase 5a の正本仕様。
 
-Ring 3 → Ring 0 遷移時のスタック切り替え用にTSSのesp0/ss0を設定。
+- 8 syscall: NOP, EXIT, WRITE, READ_TICKS, DUP, CLOSE, SPAWN, WAIT
+- ハンドルテーブル + 権限ビットによるリソースアクセス制御
+- init プロセスがカーネルから固定 capability セットを受け取り、子にサブセットを委譲
+- グローバル名前空間排除（VGA unmap, IOPB 全ビット 1）
 
-### タスク 5.2: Ring 3への遷移
+---
 
-`iret` トリックでRing 3セグメントセレクタ (RPL=3) を使ってユーザーモードに遷移。
+## Phase 5b: Wasm ユーザーランド
 
-### タスク 5.3: システムコール (int 0x80)
+**ゴール**: Wasm バイナリをユーザープロセスとしてロード・実行する
 
-```moonbit
-// kernel/syscall.mbt
-pub fn syscall_dispatch(num : Int, arg1 : Int, arg2 : Int, arg3 : Int) -> Int {
-  match num {
-    1 => sys_exit(arg1)
-    2 => sys_write(arg1, arg2, arg3)
-    3 => sys_read(arg1, arg2, arg3)
-    _ => -1  // ENOSYS
-  }
-}
-```
+- ホスト関数が Phase 5a の syscall をラップ
+- import テーブル = capability ハンドルセット
+- マニフェストベースのロード時検証
 
-### タスク 5.4: 簡易ELFローダー
+---
 
-ELFバイナリのセグメントをユーザーアドレス空間にマップし、エントリポイントにジャンプ。
+## Phase 5c: Structured Concurrency（scope / cancel）
 
-**検証**:
-- ユーザーモードのプログラムがsyscallでテキスト出力できる
-- 不正なメモリアクセスがページフォルトとしてキャッチされる
+**ゴール**: スコープベースのタスク管理と cancel 伝播
+
+- PCB の scope_id / wait_token がアクティブになる
+- 全ブロッキング syscall がスコープ死亡時にエラーを返す
 
 ---
 
@@ -720,11 +724,11 @@ Multibootモジュールとして初期プログラムをロードするフラ�
 
 ### タスク 6.3: MoonBitユーザーランドアプリ
 
-MoonBitプログラムをOS専用のsyscallスタブ付きでコンパイルし、ユーザーランドで実行。
+MoonBitプログラムをOS専用のcapability handle 経由の syscallスタブ付きでコンパイルし、ユーザーランドで実行。
 
 **検証**:
 - シェルでコマンドを入力し、結果が表示される
-- MoonBitで書いたユーザープログラムがsyscall経由でテキスト出力
+- MoonBitで書いたユーザープログラムがcapability handle 経由の syscallでテキスト出力
 - `ps` でプロセス一覧が表示される
 
 ---
