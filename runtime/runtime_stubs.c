@@ -2,28 +2,7 @@
 #include <stdint.h>
 
 #include "drivers/serial.h"
-
-#define HEAP_SIZE (4 * 1024 * 1024)
-#define ALLOC_ALIGN 8u
-
-struct alloc_header {
-    size_t size;
-};
-
-static union {
-    uint8_t bytes[HEAP_SIZE];
-    uintptr_t align;
-} heap_storage;
-
-static size_t heap_offset = 0;
-
-static uint8_t *heap_begin(void) {
-    return &heap_storage.bytes[0];
-}
-
-static uint8_t *heap_end(void) {
-    return &heap_storage.bytes[heap_offset];
-}
+#include "runtime/heap.h"
 
 static void halt_forever(void) {
     __asm__ volatile("cli");
@@ -33,104 +12,19 @@ static void halt_forever(void) {
 }
 
 void *malloc(size_t size) {
-    size_t aligned;
-    size_t total;
-    struct alloc_header *header;
-    void *ptr;
-
-    if (size == 0) {
-        size = 1;
-    }
-
-    if (size > ((size_t)-1) - (ALLOC_ALIGN - 1u)) {
-        return (void *)0;
-    }
-
-    aligned = (size + (ALLOC_ALIGN - 1u)) & ~((size_t)(ALLOC_ALIGN - 1u));
-    if (aligned > ((size_t)-1) - sizeof(struct alloc_header)) {
-        return (void *)0;
-    }
-
-    total = sizeof(struct alloc_header) + aligned;
-    if (total > HEAP_SIZE - heap_offset) {
-        return (void *)0;
-    }
-
-    header = (struct alloc_header *)(void *)(heap_begin() + heap_offset);
-    header->size = size;
-    ptr = (void *)(header + 1);
-    heap_offset += total;
-    return ptr;
+    return heap_malloc(size);
 }
 
-/* TODO: no-op for Phase 1 bump allocator; replace with free-list/bitmap allocator when needed. */
 void free(void *ptr) {
-    (void)ptr;
+    heap_free(ptr);
 }
 
 void *calloc(size_t count, size_t size) {
-    size_t total;
-    uint8_t *buf;
-    size_t i;
-
-    if (count != 0 && size > ((size_t)-1) / count) {
-        return (void *)0;
-    }
-    total = count * size;
-    buf = (uint8_t *)malloc(total);
-
-    if (buf == (uint8_t *)0) {
-        return (void *)0;
-    }
-
-    for (i = 0; i < total; ++i) {
-        buf[i] = 0;
-    }
-    return buf;
+    return heap_calloc(count, size);
 }
 
 void *realloc(void *ptr, size_t size) {
-    struct alloc_header *header;
-    uint8_t *base;
-    uint8_t *limit;
-    void *new_ptr;
-    size_t old_size;
-    size_t copy_size;
-    size_t i;
-
-    if (ptr == (void *)0) {
-        return malloc(size);
-    }
-
-    if (size == 0) {
-        free(ptr);
-        return (void *)0;
-    }
-
-    base = heap_begin();
-    limit = heap_end();
-
-    if ((uint8_t *)ptr < base + sizeof(struct alloc_header) || (uint8_t *)ptr >= limit) {
-        return (void *)0;
-    }
-
-    header = ((struct alloc_header *)ptr) - 1;
-    if ((uint8_t *)header < base || (uint8_t *)(header + 1) > limit) {
-        return (void *)0;
-    }
-
-    old_size = header->size;
-    new_ptr = malloc(size);
-    if (new_ptr == (void *)0) {
-        return (void *)0;
-    }
-
-    copy_size = old_size < size ? old_size : size;
-    for (i = 0; i < copy_size; ++i) {
-        ((uint8_t *)new_ptr)[i] = ((uint8_t *)ptr)[i];
-    }
-
-    return new_ptr;
+    return heap_realloc(ptr, size);
 }
 
 void *memset(void *dst, int c, size_t n) {

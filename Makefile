@@ -30,7 +30,9 @@ KAS          = $(KERNEL_CROSS)as
 KERNEL_ELF   = kernel.elf
 KERNEL_OBJS  = arch/x86/multiboot_boot.o arch/x86/isr_stubs.o arch/x86/isr_dispatch.o arch/x86/idt.o \
                arch/x86/pic.o arch/x86/pit.o arch/x86/keyboard.o \
-               drivers/vga.o drivers/serial.o kernel/fmt.o kernel/main.o
+               drivers/vga.o drivers/serial.o kernel/fmt.o \
+               kernel/multiboot.o kernel/pmm.o kernel/paging.o runtime/heap.o \
+               kernel/main.o
 
 KCFLAGS      = -m32 -std=gnu11 -ffreestanding -O2 -Wall -Wextra -fno-stack-protector -fno-pie -fno-asynchronous-unwind-tables -fno-unwind-tables -MMD -MP -I.
 KASFLAGS     = --32
@@ -52,6 +54,7 @@ MOON_KERNEL_ELF  ?= moon-kernel.elf
 MOON_KERNEL_OBJS = arch/x86/multiboot_boot.o arch/x86/isr_stubs.o arch/x86/isr_dispatch.o arch/x86/idt.o \
                    arch/x86/pic.o arch/x86/pit.o arch/x86/keyboard.o \
                    drivers/vga.o drivers/serial.o kernel/fmt.o \
+                   kernel/multiboot.o kernel/pmm.o kernel/paging.o runtime/heap.o \
                    runtime/runtime_stubs.o runtime/moon_kernel_ffi.o runtime/moon_runtime.o \
                    kernel/moon_entry.o $(MOON_GEN_O)
 MOON_KCFLAGS     = $(KCFLAGS) -DMOONBIT_NATIVE_NO_SYS_HEADER -I$(MOON_INCLUDE_DIR)
@@ -131,6 +134,21 @@ drivers/serial.o: drivers/serial.c
 kernel/fmt.o: kernel/fmt.c
 	$(KCC) $(KCFLAGS) -c $< -o $@
 
+kernel/multiboot.o: kernel/multiboot.c kernel/multiboot.h
+	$(KCC) $(KCFLAGS) -c $< -o $@
+
+kernel/pmm.o: kernel/pmm.c kernel/pmm.h kernel/multiboot.h
+	$(KCC) $(KCFLAGS) -c $< -o $@
+
+kernel/paging.o: kernel/paging.c kernel/paging.h kernel/pmm.h
+	$(KCC) $(KCFLAGS) -c $< -o $@
+
+runtime/heap.o: runtime/heap.c runtime/heap.h
+	$(KCC) $(KCFLAGS) -c $< -o $@
+
+runtime/runtime_stubs.o: runtime/runtime_stubs.c runtime/heap.h
+	$(KCC) $(KCFLAGS) -c $< -o $@
+
 kernel/main.o: kernel/main.c
 	$(KCC) $(KCFLAGS) -c $< -o $@
 
@@ -159,9 +177,6 @@ $(MOON_GEN_C): moon.mod.json moon.pkg moon_kernel.mbt cmd/moon_kernel/moon.pkg c
 	$(MOON) build --target native $(MOON_MAIN_PKG)
 
 $(MOON_GEN_O): $(MOON_GEN_C)
-	$(KCC) $(MOON_KCFLAGS) -c $< -o $@
-
-runtime/runtime_stubs.o: runtime/runtime_stubs.c
 	$(KCC) $(MOON_KCFLAGS) -c $< -o $@
 
 runtime/moon_kernel_ffi.o: runtime/moon_kernel_ffi.c
