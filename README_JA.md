@@ -8,6 +8,7 @@
 - Phase 0 カーネル経路: Multiboot + フリースタンディング C カーネルのビルドが可能。
 - Phase 1 カーネル経路: MoonBit 生成コードのカーネル経路が起動し、COM1 シリアルにログ出力可能。
 - Phase 2 割り込み基盤: 完了（Step 1-10。実装は Step 9 まで、Step 10 はドキュメント同期）。
+- Phase 3 メモリ管理: 仕様書完成（[docs/SPEC_PHASE3_MEMORY.md](docs/SPEC_PHASE3_MEMORY.md)）、実装待ち。
 
 ## クイックスタート
 
@@ -65,7 +66,7 @@ timeout 6s qemu-system-i386 -kernel kernel.elf -serial stdio -display none -moni
 
 - `runtime/runtime_stubs.c` で `malloc` / `calloc` のオーバーフロー安全チェックを実装。
 - `realloc` は既存データを保持する動作に修正済み。
-- `free` は現状 no-op（バンプアロケータ前提）で、初期段階のマイルストーン向け実装。
+- `free` は現状 no-op（バンプアロケータ）。Phase 3 で free-list アロケータに置換予定。仕様: [docs/SPEC_PHASE3_MEMORY.md](docs/SPEC_PHASE3_MEMORY.md)
 
 ## ドキュメント
 
@@ -75,3 +76,5 @@ timeout 6s qemu-system-i386 -kernel kernel.elf -serial stdio -display none -moni
 - [ロードマップ英語要約](docs/ROADMAP_EN.md)
 - [詳細技術レポート（正本・日本語）](docs/REPORT_JA.md)
 - [レポート英語要約](docs/REPORT_EN.md)
+- [Phase 3 メモリ管理仕様](docs/SPEC_PHASE3_MEMORY.md): 物理アロケータ・ページング・ヒープの実装仕様
+- [Phase 5a capability syscall 仕様](docs/SPEC_PHASE5A_CAPABILITY_SYSCALL.md): capability ベースの syscall 設計

@@ -8,6 +8,7 @@ Current state:
 - Phase 0 kernel path: Multiboot + freestanding C kernel build is available.
 - Phase 1 kernel path: MoonBit-generated kernel path boots and logs via COM1 serial.
 - Phase 2 interrupt foundations: completed (Steps 1-10; implementation through Step 9 + Step 10 documentation sync).
+- Phase 3 memory management: spec complete ([docs/SPEC_PHASE3_MEMORY.md](docs/SPEC_PHASE3_MEMORY.md)), implementation pending.
 
 ## Quickstart
 
@@ -65,7 +66,7 @@ timeout 6s qemu-system-i386 -kernel kernel.elf -serial stdio -display none -moni
 
 - `runtime/runtime_stubs.c` includes overflow-safe allocation guards for `malloc` and `calloc`.
 - `realloc` now preserves previous contents when growing/shrinking buffers.
-- `free` is currently a no-op (bump allocator model), suitable for current early-kernel milestones.
+- `free` is currently a no-op (bump allocator). Phase 3 replaces this with a free-list allocator; see [docs/SPEC_PHASE3_MEMORY.md](docs/SPEC_PHASE3_MEMORY.md).
 
 ## Documentation
 
@@ -75,3 +76,5 @@ timeout 6s qemu-system-i386 -kernel kernel.elf -serial stdio -display none -moni
 - [Roadmap companion (EN)](docs/ROADMAP_EN.md): token-efficient roadmap summary.
 - [Canonical report (JA)](docs/REPORT_JA.md): deep technical report.
 - [Report companion (EN)](docs/REPORT_EN.md): token-efficient report summary.
+- [Phase 3 memory spec](docs/SPEC_PHASE3_MEMORY.md): implementation spec for physical allocator, paging, heap.
+- [Phase 5a capability spec](docs/SPEC_PHASE5A_CAPABILITY_SYSCALL.md): capability syscall design.
