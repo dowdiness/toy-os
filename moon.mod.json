@@ -5,5 +5,6 @@
   "repository": "",
   "license": "MIT",
   "keywords": [],
-  "description": "Toy OS experiments with MoonBit native backend and bare-metal x86"
+  "description": "Toy OS experiments with MoonBit native backend and bare-metal x86",
+  "preferred-target": "native"
 }
