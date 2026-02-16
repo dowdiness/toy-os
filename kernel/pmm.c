@@ -31,11 +31,16 @@ static inline void bitmap_clear(uint32_t page_index) {
 
 static void pmm_mark_reserved(uint32_t start_addr, uint32_t end_addr) {
     uint32_t start_page = start_addr / PMM_PAGE_SIZE;
-    uint32_t end_page = (end_addr + PMM_PAGE_SIZE - 1u) / PMM_PAGE_SIZE;
+    uint64_t end_page_64;
+    uint32_t end_page;
     uint32_t i;
 
-    if (end_page > total_page_count) {
+    /* Use 64-bit arithmetic to prevent overflow when computing end_page */
+    end_page_64 = ((uint64_t)end_addr + PMM_PAGE_SIZE - 1u) / PMM_PAGE_SIZE;
+    if (end_page_64 > total_page_count) {
         end_page = total_page_count;
+    } else {
+        end_page = (uint32_t)end_page_64;
     }
 
     for (i = start_page; i < end_page; ++i) {
