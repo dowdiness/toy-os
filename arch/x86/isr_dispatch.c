@@ -22,6 +22,12 @@ static void isr_halt_forever(void) {
 
 static void isr_panic(const struct isr_frame *frame) __attribute__((noreturn));
 
+static inline uint32_t isr_cr2_read(void) {
+    uint32_t val;
+    __asm__ volatile("mov %%cr2, %0" : "=r"(val));
+    return val;
+}
+
 static void isr_panic(const struct isr_frame *frame) {
     serial_puts("[isr] PANIC exception vector=");
     put_hex32(frame->vector, serial_puts, serial_putchar);
@@ -33,6 +39,10 @@ static void isr_panic(const struct isr_frame *frame) {
     put_hex32(frame->cs, serial_puts, serial_putchar);
     serial_puts(" eflags=");
     put_hex32(frame->eflags, serial_puts, serial_putchar);
+    if (frame->vector == 14u) {
+        serial_puts(" cr2=");
+        put_hex32(isr_cr2_read(), serial_puts, serial_putchar);
+    }
     serial_puts("\n");
 
     serial_puts("[isr] regs eax=");
