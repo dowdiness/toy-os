@@ -50,7 +50,7 @@ static void pmm_mark_reserved(uint32_t start_addr, uint32_t end_addr) {
 
 static void pmm_mark_free(uint32_t start_addr, uint32_t end_addr) {
     uint32_t start_page = start_addr / PMM_PAGE_SIZE;
-    uint32_t end_page = (end_addr + PMM_PAGE_SIZE - 1u) / PMM_PAGE_SIZE;
+    uint32_t end_page = end_addr / PMM_PAGE_SIZE;  /* Round down to only free fully-covered pages */
     uint32_t i;
 
     if (end_page > total_page_count) {
@@ -86,10 +86,20 @@ static void pmm_scan_ram_top_callback(uint32_t base, uint32_t length, int availa
 }
 
 static void pmm_mark_available_callback(uint32_t base, uint32_t length, int available) {
+    uint64_t end64;
+    uint32_t end;
+
     if (available == 0 || length == 0u) {
         return;
     }
-    pmm_mark_free(base, base + length);
+
+    end64 = (uint64_t)base + (uint64_t)length;
+    if (end64 > 0xFFFFFFFFull) {
+        end = 0xFFFFFFFFu;
+    } else {
+        end = (uint32_t)end64;
+    }
+    pmm_mark_free(base, end);
 }
 
 uint32_t pmm_init(uint32_t kernel_end, const struct multiboot_info *info) {

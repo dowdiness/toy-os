@@ -8,6 +8,7 @@ struct heap_block {
     uint32_t size;
     uint32_t is_free;
     struct heap_block *next;
+    uint32_t _pad;  /* Padding to make sizeof(heap_block) == 16, aligning to HEAP_ALIGN=8 */
 };
 
 #define HEAP_BLOCK_HEADER_SIZE ((uint32_t)sizeof(struct heap_block))

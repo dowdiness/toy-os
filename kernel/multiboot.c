@@ -54,10 +54,20 @@ uint32_t multiboot_scan_mmap(const struct multiboot_info *info,
 }
 
 static void mmap_debug_print(uint32_t base, uint32_t length, int available) {
+    uint64_t end64;
+    uint32_t end;
+
+    end64 = (uint64_t)base + (uint64_t)length;
+    if (end64 > 0xFFFFFFFFull) {
+        end = 0xFFFFFFFFu;
+    } else {
+        end = (uint32_t)end64;
+    }
+
     serial_puts("  ");
     put_hex32(base, serial_puts, serial_putchar);
     serial_puts(" - ");
-    put_hex32(base + length, serial_puts, serial_putchar);
+    put_hex32(end, serial_puts, serial_putchar);
     serial_puts(available ? " [available]" : " [reserved]");
     serial_puts("\n");
 }

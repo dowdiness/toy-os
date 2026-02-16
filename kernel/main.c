@@ -169,7 +169,7 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     if (multiboot_magic != MULTIBOOT_MAGIC) {
         serial_puts("[boot] ERROR: invalid multiboot magic\n");
         vga_puts("ERROR: Invalid multiboot magic.\n");
-        return;
+        cpu_idle_forever();
     }
 
     multiboot_dump_mmap(mbi);
@@ -178,7 +178,7 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     ram_top = pmm_init(kernel_end, mbi);
     if (ram_top == 0u || pmm_total_pages() == 0u || pmm_free_pages() == 0u) {
         serial_puts("[pmm] ERROR: init failed\n");
-        return;
+        cpu_idle_forever();
     }
     pmm_dump_stats();
 
@@ -187,7 +187,7 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     heap_base = pmm_alloc_contiguous(INITIAL_HEAP_PAGES);
     if (heap_base == 0u) {
         serial_puts("[heap] ERROR: cannot allocate contiguous heap pages\n");
-        return;
+        cpu_idle_forever();
     }
 
     heap_init((void *)(uintptr_t)heap_base, INITIAL_HEAP_PAGES * PMM_PAGE_SIZE);

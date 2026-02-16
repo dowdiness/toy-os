@@ -116,6 +116,16 @@ int paging_map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags) {
             return -1;
         }
 
+        /*
+         * SAFETY: zero_page accesses pt_phys via identity mapping.
+         * PMM must only allocate pages within the identity-mapped range.
+         * If this fails, PMM is allocating outside the mapped region.
+         */
+        if (pt_phys >= PAGING_MAX_IDENTITY_MAP) {
+            /* This should never happen if PMM is properly initialized */
+            return -1;
+        }
+
         zero_page(pt_phys);
         pd[pd_index] = (pt_phys & PTE_ADDR_MASK) | PTE_PRESENT | PTE_WRITABLE;
         paging_flush_tlb();
