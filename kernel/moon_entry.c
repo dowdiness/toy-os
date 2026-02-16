@@ -64,7 +64,7 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
 
     kernel_end = (uint32_t)(uintptr_t)&__kernel_end;
     ram_top = pmm_init(kernel_end, mbi);
-    if (ram_top == 0u) {
+    if (ram_top == 0u || pmm_total_pages() == 0u || pmm_free_pages() == 0u) {
         serial_puts("[pmm] ERROR: init failed\n");
         cpu_idle_forever();
     }

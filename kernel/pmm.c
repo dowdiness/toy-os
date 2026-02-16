@@ -68,13 +68,18 @@ static void pmm_mark_free(uint32_t start_addr, uint32_t end_addr) {
 static uint32_t g_ram_top_scan;
 
 static void pmm_scan_ram_top_callback(uint32_t base, uint32_t length, int available) {
+    uint64_t top64;
     uint32_t top;
 
     if (available == 0 || length == 0u) {
         return;
     }
 
-    top = base + length;
+    top64 = (uint64_t)base + (uint64_t)length;
+    if (top64 > 0xFFFFFFFFull) {
+        top64 = 0xFFFFFFFFull;
+    }
+    top = (uint32_t)top64;
     if (top > g_ram_top_scan) {
         g_ram_top_scan = top;
     }
