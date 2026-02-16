@@ -27,7 +27,7 @@
 - 完了: `Makefile` の MoonBit ビルド依存関係を `moon.pkg` ベースに修正。
 - 完了: Phase 2 割り込み基盤（Step 1-10）
   （実装本体は Step 9 まで: IDT/ISR/PIC/PIT/keyboard 配線、MoonBit ポーリング API、例外セルフテストを含む検証マトリクス。Step 10 はドキュメント同期）を完了。
-- 計画確定: Phase 3 メモリ管理の詳細仕様書を作成（[SPEC_PHASE3_MEMORY.md](./SPEC_PHASE3_MEMORY.md)）
+- 完了: Phase 3 メモリ管理の詳細仕様書を作成（[SPEC_PHASE3_MEMORY_JA.md](./SPEC_PHASE3_MEMORY_JA.md)）および実装完了
 - 計画確定: Phase 5 を 5a（capability syscall + ELF）/ 5b（Wasm）/ 5c（structured concurrency）に分割
 - 計画確定: Phase 5a capability syscall の詳細仕様書を作成（[SPEC_PHASE5A_CAPABILITY_SYSCALL.md](./SPEC_PHASE5A_CAPABILITY_SYSCALL.md)）
 - 設計決定: capability ベースのセキュリティモデルを採用（グローバル名前空間排除）
@@ -605,7 +605,7 @@ MoonBitのパターンマッチでスキャンコード→ASCIIの変換テー�
 
 **ゴール**: 物理メモリ管理 + ページング + 適切なヒープアロケータ（Perceus RCが正しく動作する）
 
-**詳細仕様**: [SPEC_PHASE3_MEMORY.md](./SPEC_PHASE3_MEMORY.md) — Phase 3 の正本仕様。以下は要約。
+**詳細仕様**: [SPEC_PHASE3_MEMORY_JA.md](./SPEC_PHASE3_MEMORY_JA.md) — Phase 3 の正本仕様。以下は要約。
 
 ### 実装ステップ（9段階）
 

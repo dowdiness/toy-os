@@ -28,7 +28,7 @@ Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
 - Completed: Phase 2 interrupt foundations (Steps 1-10)
   (core implementation through Step 9: IDT/ISR/PIC/PIT/keyboard wiring, MoonBit polling API, and verification matrix including deterministic fault-path self-test; Step 10: documentation sync).
 
-- Planned: Phase 3 memory management spec authored (SPEC_PHASE3_MEMORY.md).
+- Completed: Phase 3 memory management spec authored (SPEC_PHASE3_MEMORY_EN.md) and implementation finished.
 - Planned: Phase 5 split into 5a (capability syscall) / 5b (Wasm) / 5c (structured concurrency).
 - Planned: Phase 5a capability syscall spec authored (SPEC_PHASE5A_CAPABILITY_SYSCALL.md).
 - Decision: Capability-based security model adopted (no global namespace).
@@ -63,7 +63,7 @@ Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
    - Wire timer/keyboard paths.
 4. Phase 3: Memory management.
    - Physical page frame allocator, identity-mapped paging, free-list heap.
-   - Spec: SPEC_PHASE3_MEMORY.md
+   - Spec: SPEC_PHASE3_MEMORY_EN.md
 5. Phase 4: Process management + scheduling.
    - PCB with reserved fields for capability and scope/cancel.
    - Context switch + round-robin scheduler.
@@ -76,4 +76,4 @@ Use [ROADMAP.md](./ROADMAP.md) when exact implementation detail is required.
 
 ## Practical Next Step
 
-Execute Phase 3 per SPEC_PHASE3_MEMORY.md (Steps 3-1 through 3-9).
+Phase 3 completed per SPEC_PHASE3_MEMORY_EN.md (Steps 3-1 through 3-9).

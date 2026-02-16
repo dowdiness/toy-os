@@ -8,7 +8,7 @@ Current state:
 - Phase 0 kernel path: Multiboot + freestanding C kernel build is available.
 - Phase 1 kernel path: MoonBit-generated kernel path boots and logs via COM1 serial.
 - Phase 2 interrupt foundations: completed (Steps 1-10; implementation through Step 9 + Step 10 documentation sync).
-- Phase 3 memory management: spec complete ([docs/SPEC_PHASE3_MEMORY.md](docs/SPEC_PHASE3_MEMORY.md)), implementation pending.
+- Phase 3 memory management: **completed** ([spec](docs/SPEC_PHASE3_MEMORY_EN.md)) - multiboot mmap, bitmap PMM, identity paging, free-list heap.
 
 ## Quickstart
 
@@ -37,17 +37,53 @@ make check-moon-kernel               # Validate Multiboot header
 make run-moon-kernel-serial          # Headless run + serial output
 ```
 
+## MoonBit Development
+
+```sh
+make check                           # Check MoonBit code (uses native backend)
+make test                            # Run MoonBit tests (uses native backend)
+moon check                           # Direct moon check (native backend is default)
+moon test                            # Direct moon test (native backend is default)
+```
+
 ## Phase 2 Verification (Step 9)
 
 ```sh
-moon check --target native
+make check
 make kernel.elf && make check-kernel
 make moon-kernel.elf && make check-moon-kernel
 timeout 6s make run-kernel-serial
 timeout 6s make run-moon-kernel-serial
 ```
 
-Fault-path self-test (optional, compile-time only):
+## Phase 3 Verification
+
+Verify memory management subsystems:
+
+```sh
+make check
+make kernel.elf && make check-kernel
+make moon-kernel.elf && make check-moon-kernel
+timeout 6s make run-kernel-serial
+timeout 6s make run-moon-kernel-serial
+```
+
+Expected output should show:
+- `[mmap] entries: 0x00000006` (memory map parsed)
+- `[pmm] total=..., free=...` (both non-zero)
+- `[paging] enabled, identity-mapped ... MiB`
+- `[heap] initialized (1 MiB at ...)`
+- `[pit] heartbeat` (continues after paging enabled)
+
+Heap self-test (optional, compile-time only):
+
+```sh
+make clean-kernel
+make kernel.elf KCFLAGS='-m32 -std=gnu11 -ffreestanding -O2 -Wall -Wextra -fno-stack-protector -fno-pie -fno-asynchronous-unwind-tables -fno-unwind-tables -MMD -MP -I. -DPHASE3_HEAP_TEST'
+timeout 6s qemu-system-i386 -kernel kernel.elf -serial stdio -display none -monitor none
+```
+
+Phase 2 fault-path self-test (optional):
 
 ```sh
 make clean-kernel
@@ -64,9 +100,10 @@ timeout 6s qemu-system-i386 -kernel kernel.elf -serial stdio -display none -moni
 
 ## Runtime Notes
 
-- `runtime/runtime_stubs.c` includes overflow-safe allocation guards for `malloc` and `calloc`.
-- `realloc` now preserves previous contents when growing/shrinking buffers.
-- `free` is currently a no-op (bump allocator). Phase 3 replaces this with a free-list allocator; see [docs/SPEC_PHASE3_MEMORY.md](docs/SPEC_PHASE3_MEMORY.md).
+- `runtime/heap.c` implements a free-list allocator with splitting and coalescing.
+- `heap_malloc`, `heap_free`, `heap_calloc`, `heap_realloc` provide full dynamic memory management.
+- Heap is initialized with 1 MiB of contiguous physical pages from PMM.
+- All allocations are 8-byte aligned with proper header padding.
 
 ## Documentation
 
@@ -76,5 +113,5 @@ timeout 6s qemu-system-i386 -kernel kernel.elf -serial stdio -display none -moni
 - [Roadmap companion (EN)](docs/ROADMAP_EN.md): token-efficient roadmap summary.
 - [Canonical report (JA)](docs/REPORT_JA.md): deep technical report.
 - [Report companion (EN)](docs/REPORT_EN.md): token-efficient report summary.
-- [Phase 3 memory spec](docs/SPEC_PHASE3_MEMORY.md): implementation spec for physical allocator, paging, heap.
-- [Phase 5a capability spec](docs/SPEC_PHASE5A_CAPABILITY_SYSCALL.md): capability syscall design.
+- [Phase 3 memory spec (EN)](docs/SPEC_PHASE3_MEMORY_EN.md): implementation spec for multiboot, PMM, paging, heap.
+- [Phase 3 memory spec (JA)](docs/SPEC_PHASE3_MEMORY_JA.md): 日本語版メモリ管理仕様書.

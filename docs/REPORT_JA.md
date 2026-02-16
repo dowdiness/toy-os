@@ -20,7 +20,7 @@
 - 実装済み: Phase 2 割り込み基盤は完了（Step 1-10）
   （実装本体は Step 9 まで: IDT/ISR/PIC/PIT/keyboard 配線、MoonBit ポーリング API、例外セルフテストを含む検証マトリクス。Step 10 はドキュメント同期）。
 
-- 計画確定: Phase 3 メモリ管理仕様書作成（SPEC_PHASE3_MEMORY.md）— 物理ページアロケータ、ページング、free-list ヒープ
+- 完了: Phase 3 メモリ管理仕様書作成（SPEC_PHASE3_MEMORY_JA.md）および実装完了 — multiboot mmap、ビットマップ PMM、identity paging、free-list ヒープ
 - 設計決定: Phase 5 を capability ベースのセキュリティモデルに変更。5a（capability syscall + ELF）/ 5b（Wasm）/ 5c（structured concurrency）に分割
 - 計画確定: Phase 5a 仕様書作成（SPEC_PHASE5A_CAPABILITY_SYSCALL.md）— 8 syscall、ハンドルテーブル、委譲モデル
 

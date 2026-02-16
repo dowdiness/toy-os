@@ -22,7 +22,7 @@ MoonBit's native backend can be used for bare-metal x86 development because it e
 - Implemented: Phase 2 interrupt foundations completed (Steps 1-10)
   (core implementation through Step 9: IDT/ISR/PIC/PIT/keyboard wiring, MoonBit polling API, and verification matrix including deterministic fault-path self-test; Step 10: documentation sync).
 
-- Planned: Phase 3 memory management spec (SPEC_PHASE3_MEMORY.md) — physical page allocator, paging, free-list heap.
+- Completed: Phase 3 memory management spec (SPEC_PHASE3_MEMORY_EN.md) and implementation — multiboot mmap, bitmap PMM, identity paging, free-list heap.
 - Decision: Capability-based security model for Phase 5. Phase 5 split into 5a (capability syscall + ELF), 5b (Wasm), 5c (structured concurrency).
 - Planned: Phase 5a spec (SPEC_PHASE5A_CAPABILITY_SYSCALL.md) — 8 syscalls, handle table, delegation model.
 

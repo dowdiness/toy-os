@@ -117,17 +117,17 @@
     - `docs/ROADMAP_EN.md`, `docs/ROADMAP.md`
     - `docs/REPORT_EN.md`, `docs/REPORT_JA.md`
 
-## Phase 3: メモリ管理（Step 5）
+## Phase 3: Memory Management (Step 5)
 
-仕様書: [docs/SPEC_PHASE3_MEMORY.md](docs/SPEC_PHASE3_MEMORY.md)
-（Step 番号は仕様書の Section 10 に準拠。仕様書が更新された場合はここも追従させること。）
+Spec: [docs/SPEC_PHASE3_MEMORY_EN.md](docs/SPEC_PHASE3_MEMORY_EN.md)
+(Step numbers follow spec Section 10. Update this if spec is revised.)
 
-- [ ] Step 3-1: linker.ld に __kernel_end シンボル追加
-- [ ] Step 3-2: kernel/multiboot.h + multiboot.c 実装（メモリマップ解析）
-- [ ] Step 3-3: kernel/pmm.h + pmm.c 実装（ビットマップ物理ページアロケータ）
-- [ ] Step 3-4: kernel/paging.h + paging.c 実装（恒等マッピング + CR0.PG）
-- [ ] Step 3-5: ページフォルトハンドラ（ベクタ 14 で CR2 出力）
-- [ ] Step 3-6: runtime/heap.h + heap.c 実装（free-list アロケータ）
-- [ ] Step 3-7: kernel/moon_entry.c に Phase 3 初期化統合
-- [ ] Step 3-8: Makefile 更新 + 全ビルドパス回帰
-- [ ] Step 3-9: 全検証マトリクス + ドキュメント同期
+- [x] Step 3-1: Add __kernel_end symbol to linker.ld
+- [x] Step 3-2: Implement kernel/multiboot.h + multiboot.c (memory map parsing)
+- [x] Step 3-3: Implement kernel/pmm.h + pmm.c (bitmap physical page allocator)
+- [x] Step 3-4: Implement kernel/paging.h + paging.c (identity mapping + CR0.PG)
+- [x] Step 3-5: Page fault handler (vector 14 with CR2 output)
+- [x] Step 3-6: Implement runtime/heap.h + heap.c (free-list allocator)
+- [x] Step 3-7: Integrate Phase 3 initialization into kernel/moon_entry.c
+- [x] Step 3-8: Update Makefile + all build path regression
+- [x] Step 3-9: Full verification matrix + documentation sync
