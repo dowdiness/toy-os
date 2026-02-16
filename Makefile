@@ -174,6 +174,9 @@ clean-kernel:
 check:
 	$(MOON) check --target native
 
+test:
+	$(MOON) test --target native
+
 moon-gen: $(MOON_GEN_C)
 
 $(MOON_GEN_C): moon.mod.json moon.pkg moon_kernel.mbt cmd/moon_kernel/moon.pkg cmd/moon_kernel/main.mbt runtime/moon_kernel_ffi_host.c
@@ -219,6 +222,6 @@ clean:
 		$(MOON_KERNEL_ELF) $(MOON_KERNEL_OBJS) $(MOON_KERNEL_DEPS)
 
 # .PHONY: all, run, clean などのターゲットは常に実行
-.PHONY: all run clean check \
+.PHONY: all run clean check test \
 	run-kernel run-kernel-serial check-kernel clean-kernel \
 	moon-gen run-moon-kernel run-moon-kernel-serial check-moon-kernel clean-moon-kernel
