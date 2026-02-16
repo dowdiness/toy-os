@@ -147,7 +147,7 @@ runtime/heap.o: runtime/heap.c runtime/heap.h
 	$(KCC) $(KCFLAGS) -c $< -o $@
 
 runtime/runtime_stubs.o: runtime/runtime_stubs.c runtime/heap.h
-	$(KCC) $(KCFLAGS) -c $< -o $@
+	$(KCC) $(MOON_KCFLAGS) -c $< -o $@
 
 kernel/main.o: kernel/main.c
 	$(KCC) $(KCFLAGS) -c $< -o $@
