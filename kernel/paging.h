@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define PAGE_SIZE 4096u
+#define PAGING_MAX_IDENTITY_MAP (256u * 1024u * 1024u)  /* 256 MiB */
 
 #define PTE_PRESENT       (1u << 0)
 #define PTE_WRITABLE      (1u << 1)

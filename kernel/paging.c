@@ -6,8 +6,6 @@
 #include "kernel/fmt.h"
 #include "kernel/pmm.h"
 
-#define PAGING_MAX_IDENTITY_MAP (256u * 1024u * 1024u)
-
 static uint32_t g_page_directory_phys;
 
 static inline void write_u32(uint32_t addr, uint32_t value) {

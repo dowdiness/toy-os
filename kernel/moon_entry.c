@@ -80,6 +80,20 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
         serial_puts("[heap] ERROR: cannot allocate contiguous heap pages\n");
         cpu_idle_forever();
     }
+
+    /* Verify heap is within identity-mapped range to prevent page faults */
+    if (heap_base + INITIAL_HEAP_PAGES * PMM_PAGE_SIZE > PAGING_MAX_IDENTITY_MAP) {
+        serial_puts("[heap] ERROR: heap allocation exceeds identity-mapped range\n");
+        serial_puts("[heap] heap_base=");
+        put_hex32(heap_base, serial_puts, serial_putchar);
+        serial_puts(", heap_end=");
+        put_hex32(heap_base + INITIAL_HEAP_PAGES * PMM_PAGE_SIZE, serial_puts, serial_putchar);
+        serial_puts(", limit=");
+        put_hex32(PAGING_MAX_IDENTITY_MAP, serial_puts, serial_putchar);
+        serial_puts("\n");
+        cpu_idle_forever();
+    }
+
     heap_init((void *)(uintptr_t)heap_base, INITIAL_HEAP_PAGES * PMM_PAGE_SIZE);
     serial_puts("[heap] initialized (1 MiB at ");
     put_hex32(heap_base, serial_puts, serial_putchar);
