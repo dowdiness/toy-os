@@ -54,7 +54,7 @@ static uint32_t paging_identity_map_top(uint32_t ram_top) {
     return ram_top;
 }
 
-void paging_init(uint32_t ram_top) {
+int paging_init(uint32_t ram_top) {
     uint32_t map_top;
     uint32_t pd_phys;
     uint32_t pd_index;
@@ -63,7 +63,7 @@ void paging_init(uint32_t ram_top) {
     pd_phys = pmm_alloc_page();
     if (pd_phys == 0u) {
         serial_puts("[paging] ERROR: failed to allocate page directory\n");
-        return;
+        return -1;
     }
 
     zero_page(pd_phys);
@@ -75,7 +75,7 @@ void paging_init(uint32_t ram_top) {
 
         if (pt_phys == 0u) {
             serial_puts("[paging] ERROR: failed to allocate page table\n");
-            return;
+            return -1;
         }
 
         zero_page(pt_phys);
@@ -100,6 +100,7 @@ void paging_init(uint32_t ram_top) {
     serial_puts("[paging] enabled, identity-mapped ");
     put_hex32(map_top / (1024u * 1024u), serial_puts, serial_putchar);
     serial_puts(" MiB\n");
+    return 0;
 }
 
 int paging_map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags) {

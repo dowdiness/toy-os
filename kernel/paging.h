@@ -20,7 +20,7 @@
 #define RECURSIVE_PD_VADDR 0xFFFFF000u
 #define RECURSIVE_PT_BASE  0xFFC00000u
 
-void paging_init(uint32_t ram_top);
+int paging_init(uint32_t ram_top);  /* Returns 0 on success, -1 on failure */
 int paging_map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags);
 void paging_unmap_page(uint32_t vaddr);
 void paging_flush_tlb(void);

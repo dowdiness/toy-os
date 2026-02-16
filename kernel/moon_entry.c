@@ -70,7 +70,10 @@ void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
     }
     pmm_dump_stats();
 
-    paging_init(ram_top);
+    if (paging_init(ram_top) != 0) {
+        serial_puts("[paging] ERROR: init failed\n");
+        cpu_idle_forever();
+    }
 
     heap_base = pmm_alloc_contiguous(INITIAL_HEAP_PAGES);
     if (heap_base == 0u) {
